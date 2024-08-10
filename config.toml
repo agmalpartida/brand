@@ -79,7 +79,7 @@ favicon16x16 = "img/favicon.png"
 favicon32x32 = "img/favicon.png"
 apple_touch_icon = "img/favicon.png"
 safari_pinned_tab = "img/favicon.png"
-disableFingerprinting = true
+# disableFingerprinting = true
 
 [params.fuseOpts]
 isCaseSensitive = false
