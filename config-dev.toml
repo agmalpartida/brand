@@ -74,10 +74,14 @@ URL = "https://github.com/agmalpartida/brand/tree/published/content"
 Text = "Suggest Changes"
 appendFilePath = true
 [params.assets]
-# disableHLJS = true
-# favicon = "<link / abs url>"
-favicon = "<link / abs images/favicon.png>"
-favicon32x32 = "<link / abs images/favicon.png>"
+disableHLJS = true
+favicon = "img/favicon.png"
+favicon16x16 = "img/favicon.png"
+favicon32x32 = "img/favicon.png"
+apple_touch_icon = "img/favicon.png"
+safari_pinned_tab = "img/favicon.png"
+disableFingerprinting = true
+
 [params.fuseOpts]
 isCaseSensitive = false
 shouldSort = true
