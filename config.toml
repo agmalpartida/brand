@@ -2,7 +2,6 @@ baseURL = "https://albertogalvez.com/"
 title = "AG"
 paginate = 5
 theme = "PaperMod"
-hideFooter = true
 enableInlineShortcodes = true
 enableRobotsTXT = true
 buildDrafts = false

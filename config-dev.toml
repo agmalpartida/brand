@@ -3,10 +3,9 @@ title = "Development Environment"
 
 paginate = 5
 theme = "PaperMod"
-hideFooter = true
 enableInlineShortcodes = true
 enableRobotsTXT = true
-buildDrafts = true
+buildDrafts = false
 buildFuture = false
 buildExpired = false
 enableEmoji = true
@@ -44,6 +43,7 @@ env = "production"
 description = ""
 author = "Alberto"
 defaultTheme = "auto"
+DateFormat = "2006-01-02"
 ShowShareButtons = false
 ShowReadingTime = false
 displayFullLangName = true
@@ -55,6 +55,8 @@ ShowAllPagesInArchive = false
 ShowPageNums = true
 ShowToc = true
 TocOpen = true
+extendCodeBackgroud = true
+hideFooter = true
 images = ["images/logo.png"]
 [params.profileMode]
 enabled = true
@@ -62,7 +64,7 @@ title = "Alberto Galvez"
 
 [[params.socialIcons]]
 name = "github"
-title = "View Source on Github"
+title = "(〃'▽'〃)"
 url = "https://github.com/agmalpartida"
 
 [[params.socialIcons]]
