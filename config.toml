@@ -62,8 +62,6 @@ VisitCount = true
 [params.profileMode]
 enabled = true
 title = "Alberto Galvez"
-[[params.analytics.google]]
-SiteVerificationTag = ""
 
 [[params.socialIcons]]
 name = "github"
