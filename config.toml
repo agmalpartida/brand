@@ -73,11 +73,11 @@ URL = "https://github.com/agmalpartida/brand/tree/published/content"
 Text = "Suggest Changes"
 appendFilePath = true
 [params.assets]
-favicon = "img/favicon.gif"
-favicon16x16 = "img/favicon.gif"
-favicon32x32 = "img/favicon.gif"
-apple_touch_icon = "img/favicon.gif"
-safari_pinned_tab = "img/favicon.gif"
+favicon = "img/favicon.png"
+favicon16x16 = "img/favicon.png"
+favicon32x32 = "img/favicon.png"
+apple_touch_icon = "img/favicon.png"
+safari_pinned_tab = "img/favicon.png"
 disableFingerprinting = true
 
 [params.fuseOpts]
