@@ -44,6 +44,7 @@ env = "production"
 description = ""
 author = "Alberto"
 defaultTheme = "auto"
+DateFormat = "2006-01-02"
 ShowShareButtons = false
 ShowReadingTime = false
 displayFullLangName = true
@@ -56,13 +57,18 @@ ShowPageNums = true
 ShowToc = true
 TocOpen = true
 images = ["images/logo.png"]
+extendCodeBackground = true
+hideFooter = true
+VisitCount = true
 [params.profileMode]
 enabled = true
 title = "Alberto Galvez"
+[[params.analytics.google]]
+SiteVerificationTag = ""
 
 [[params.socialIcons]]
 name = "github"
-title = "View Source on Github"
+title = (〃'▽'〃)
 url = "https://github.com/agmalpartida"
 
 [[params.socialIcons]]
