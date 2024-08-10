@@ -74,6 +74,9 @@ Text = "Suggest Changes"
 appendFilePath = true
 [params.assets]
 disableHLJS = true
+favicon = "<link / abs url>"
+favicon32x32 = "<link / abs url>"
+
 [params.fuseOpts]
 isCaseSensitive = false
 shouldSort = true
