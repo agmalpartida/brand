@@ -4,7 +4,7 @@ comments = false
 keywords = ['k8s']
 showActions = false
 showMeta = false
-tags = ['kubernetes']
+tags = ['k8s']
 title = 'K8S Configuration Overview'
 +++
 
