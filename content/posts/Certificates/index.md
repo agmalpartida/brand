@@ -1,5 +1,5 @@
 +++
-title = 'Certificates'
+title = 'example'
 date = 
 categories = ['example']
 tags = ['example']
