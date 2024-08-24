@@ -1,6 +1,6 @@
 +++
 title = 'Latency vs Response Time'
-date = "2024-08-23"
+date = '2024-08-23'
 categories = ['Performance']
 tags = ['performance','network']
 keywords = ['latency','performance']
