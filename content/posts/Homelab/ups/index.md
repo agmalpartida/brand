@@ -1,6 +1,6 @@
 +++
 title = 'UPS monitoring with Grafana'
-date = 
+date = '2024-08-27'
 categories = ['Homelab']
 tags = ['ups','homelab','monitoring']
 keywords = ['homelab']
@@ -10,7 +10,7 @@ showActions = false
 showMeta = false
 +++
 
-First off, you have connected the UPS to a free USB port on your motherboard and it shows up using lsusb thus:
+First off, you have connected the UPS to a free USB port and it shows up using lsusb thus:
 
 ```sh
 $  lsusb
@@ -25,7 +25,7 @@ Once installed stop the apcupsd service if it started automatically with
 
 `systemctl stop apcupsd` 
 
-You'll next need to edit the configuration file for the service which lives at `/etc/apcupsd/apcupsd.conf` . If you'd like enter a UPSNAME that makes sense. Then the default version of this file on my system had a line that looked like DEVICE /tty/xxx0, comment out or delete this line and restart the service with:
+You'll next need to edit the configuration file for the service which lives at `/etc/apcupsd/apcupsd.conf` . If you'd like enter a **UPSNAME** that makes sense. Then the default version of this file on my system had a line that looked like DEVICE /tty/xxx0, comment out or delete this line and restart the service with:
 
 ```sh
 systemctl start apcupsd
@@ -59,7 +59,7 @@ systemctl start influxdb
 systemctl status influxdb
 ```
 
-Whether you're creating an InfluxDB setup just for this purpose or you're tacking onto an existing instance I'd suggest putting all the data from your UPS into a separate database.
+I'll put all the data from your UPS into a separate database.
 
 First, we'll need to create it and can do so using curl:
 
