@@ -63,22 +63,57 @@ Whether you're creating an InfluxDB setup just for this purpose or you're tackin
 
 First, we'll need to create it and can do so using curl:
 
+```sh
 curl -i -XPOST  "http://localhost:8086/query?q=CREATE+DATABASE+ups"
+```
 
 We can verify successful DB creation again using curl:
 
+```sh
 curl -i -XPOST  "http://localhost:8086/query?q=SHOW+DATABASES"
+```
+
+```sh
+> select * from APC where time > now() - 1h
+name: APC
+time                BATTV BCHARGE LOADPCT TIMELEFT host
+----                ----- ------- ------- -------- ----
+1724517094829361767               5                awesomo
+1724517094891750548 27                             awesomo
+1724517094952570159                       190.7    awesomo
+1724517095013039249       100                      awesomo
+1724517121518211456               5                awesomo
+
+ ~  $  influx
+Connected to http://localhost:8086 version 1.8.10
+InfluxDB shell version: 1.8.10
+> show databases
+name: databases
+name
+----
+_internal
+ups
+> use ups
+Using database ups
+> show measurements
+name: measurements
+name
+----
+APC
+```
 
 Note that final entry is ups which is the database we just created. Now we have to move onto scraping the output the UPS generates and write it to the database.
 
-Scraping the UPS output
+## Scraping the UPS output
 
 Note the section near the top tagsArray and compare the items in the array being scraped against the actual output of apcacess as shown above. Pick and choose the items you want and these are what will be written to the database. The name must match exactly else the scraping will fail.
 
 You will also need to modify, near the bottom, your InfluxDB IP. You needed this above for the curl commands.
 
+```sh
 vi /opt/scrape.php
 chmod +x /opt/scrape.php
+```
 
 ```php
 #!/usr/bin/php
@@ -123,28 +158,25 @@ $execsr = exec($curl);
 ?>
 ```
 
-You can do a test run with /opt/scrape.php and then verify your InfluxDB logs and look for some successful writes via curl (code 204 = good).
+You can do a test run with `/opt/scrape.php` and then verify your InfluxDB logs and look for some successful writes via curl (code 204 = good).
 
-Automating the scraping
+### Automating the scraping
 
-We'll use cron for automating the running of the scraping script. Do not edit the crontab with crontab -e instead you must edit /etc/crontab and specify a user in order for this work.
+We'll use cron for automating the running of the scraping script. Do not edit the crontab with `crontab -e` instead you must edit `/etc/crontab`  and specify a user in order for this work.
 
-Add the following line to /etc/crontab - this will run the scraping script every minute. Modify to suit your needs.
+Add the following line to `/etc/crontab`, this will run the scraping script every minute. 
 
+```sh
 * * * * * root /usr/bin/php /opt/scrape.php >/dev/null 2>&1
+```
 
 Again verify the InfluxDB logs for 204 response codes to check everything went OK.
 
----
->  pi@pinet
- ~  $  tail -1 /etc/crontab
-* *     * * *   root /usr/bin/php /opt/scrape.php >/dev/null 2>&1
 
-
-Grafana Dashboard
+## Grafana Dashboard
 
 The next step is to add a data source in Grafana. Under the configuration menu in Grafana click "Add data source".
-Modify the Name, Type = InfluxDB, URL = http://influxdb:8086, Database = ups, User = root, Pass = root. If you modified these values obviously modify to suit.
+Modify the Name, `Type = InfluxDB, URL = http://influxdb:8086, Database = ups, User = root, Pass = root` . If you modified these values obviously modify to suit.
 
 Then hit save & test.
 
@@ -152,37 +184,5 @@ Next in Grafana click the + icon on the left and select 'import'. We'll be impor
 
 Select your Influx UPS data source as the new data source we just created above and hit import.
 
-BOOM! That's it.
 
-
-
-curl -i -XPOST  "http://localhost:8086/query?q=SHOW+DATABASES"
-----
-> select * from APC where time > now() - 1h
-name: APC
-time                BATTV BCHARGE LOADPCT TIMELEFT host
-----                ----- ------- ------- -------- ----
-1724517094829361767               5                awesomo
-1724517094891750548 27                             awesomo
-1724517094952570159                       190.7    awesomo
-1724517095013039249       100                      awesomo
-1724517121518211456               5                awesomo
-
- pi@pinet
- ~  $  influx
-Connected to http://localhost:8086 version 1.8.10
-InfluxDB shell version: 1.8.10
-> show databases
-name: databases
-name
-----
-_internal
-ups
-> use ups
-Using database ups
-> show measurements
-name: measurements
-name
-----
-APC
 
