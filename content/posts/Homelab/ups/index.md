@@ -2,8 +2,7 @@
 title = 'UPS monitoring with Grafana'
 date = '2024-08-27'
 categories = ['Homelab']
-tags = ['ups','homelab','monitoring']
-keywords = ['homelab']
+tags = ['homelab']
 summary = 'Monitoring energy cost on your homelab'
 comments = false
 showActions = false
