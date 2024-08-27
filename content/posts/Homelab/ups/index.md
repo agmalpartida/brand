@@ -8,6 +8,7 @@ comments = false
 showActions = false
 showMeta = false
 +++
+# UPS Monitoring
 
 First off, you have connected the UPS to a free USB port and it shows up using lsusb thus:
 
