@@ -4,7 +4,7 @@ date = '2024-08-27'
 categories = ['Homelab']
 tags = ['ups','homelab','monitoring']
 keywords = ['homelab']
-summary = ''
+summary = 'Monitoring energy cost on your homelab'
 comments = false
 showActions = false
 showMeta = false
@@ -184,5 +184,5 @@ Next in Grafana click the + icon on the left and select 'import'. We'll be impor
 
 Select your Influx UPS data source as the new data source we just created above and hit import.
 
-
+![ups](./images/ups.png) 
 
