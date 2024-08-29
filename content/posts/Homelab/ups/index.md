@@ -73,16 +73,6 @@ curl -i -XPOST  "http://localhost:8086/query?q=SHOW+DATABASES"
 ```
 
 ```sh
-> select * from APC where time > now() - 1h
-name: APC
-time                BATTV BCHARGE LOADPCT TIMELEFT host
-----                ----- ------- ------- -------- ----
-1724517094829361767               5                awesomo
-1724517094891750548 27                             awesomo
-1724517094952570159                       190.7    awesomo
-1724517095013039249       100                      awesomo
-1724517121518211456               5                awesomo
-
  ~  $  influx
 Connected to http://localhost:8086 version 1.8.10
 InfluxDB shell version: 1.8.10
@@ -99,6 +89,17 @@ name: measurements
 name
 ----
 APC
+> select * from APC where time > now() - 1h
+name: APC
+time                BATTV BCHARGE LOADPCT TIMELEFT host
+----                ----- ------- ------- -------- ----
+1724517094829361767               5                myups
+1724517094891750548 27                             myups
+1724517094952570159                       190.7    myups
+1724517095013039249       100                      myups
+1724517121518211456               5                myups
+
+
 ```
 
 Note that final entry is ups which is the database we just created. Now we have to move onto scraping the output the UPS generates and write it to the database.
@@ -149,7 +150,7 @@ sendDB($match[1], $tag);
 
 function sendDB($val, $tagname) {
 
-$curl = "curl -i -XPOST 'http://localhost:8086/write?db=ups' --data-binary 'APC,host=awesomo ".$tagname."=".$val."'";
+$curl = "curl -i -XPOST 'http://localhost:8086/write?db=ups' --data-binary 'APC,host=myups ".$tagname."=".$val."'";
 $execsr = exec($curl);
 
 }
