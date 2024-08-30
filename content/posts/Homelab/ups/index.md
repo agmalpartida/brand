@@ -1,12 +1,18 @@
-+++
-title = 'UPS monitoring with Grafana'
-categories = ['Homelab']
-tags = ['homelab']
-summary = 'Monitoring energy cost on your homelab'
-comments = false
-showActions = false
-showMeta = false
-+++
+---
+Title: "UPS monitoring with Grafana"
+date: 2024-08-30
+categories:
+- Homelab
+tags:
+- homelab
+- monitoring
+summary: "Monitoring energy cost on your homelab"
+comments: false
+showMeta: false
+showActions: false
+---
+
+
 # UPS Monitoring
 
 First off, you have connected the UPS to a free USB port and it shows up using lsusb thus:
