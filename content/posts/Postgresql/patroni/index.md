@@ -76,3 +76,97 @@ Deploying three PostgreSQL servers instead of two adds an extra layer of protect
 
 ![patroni](./images/patroni-architecturei2.png) 
 
+# Patroni common operations
+
+Patroni comes with CLI utility called as **patronictl** . One can perform any admin operation related to Postgres database or cluster using this command line utility.
+
+## patronictl edit-config
+
+To edit postgres configuration parameters you can use edit-config command. It will open configuration file in editor, make the required changes and Patroni will validate all parameters before saving configuration file.
+
+You can also add pg_hba entries to the configuration so these will be reflected all over the cluster.
+
+💡If you directly update parameter values in Postgres configuration files it will be overwritten via Patroni configuration if same parameter is explicitly defined in patroni config.
+
+- `/etc/patroni/patroin.yaml` is configuration file for patroni
+
+`patronictl -c /etc/patroni/patroni.yaml edit-config` 
+
+## patronictl reload
+
+This command will reload parameters from configuration file and takes required action like restart on cluster nodes.
+**When to use** : If you have changed parameters in configuration file using edit-config you can use reload command for parameters to take effect
+
+```sh
+# patroni_cluster is name of your cluster
+patronictl -c /etc/patroni/patroni.yaml reload patroni_cluster
+```
+
+## patronictl switchover
+
+It will make selected replica as master node basically will switch all traffic to new selected node. We can have planned switchover at particular time as well.
+**When to use** : If you have maintenance for master node you can switchover master to another node in the cluster.
+
+```sh
+# It will ask for node to switchover and also time for switchover
+patronictl -c /etc/patroni/patroni.yaml switchover
+```
+
+## patronictl pause
+
+Patroni will stop managing postgres cluster and will turn on the maintenance mode. If you want to do some manual activities for maintenance you need to stop patroni from auto managing cluster.
+**When to use** : If you want to put cluster in maintenance mode and manage Postgres database manually for some time, you can use pause command so that Patroni will stop managing the cluster
+
+```sh
+patronictl -c /etc/patroni/patroni.yaml pause
+```
+
+## patronictl resume
+
+It will start the paused cluster management and remove the cluster from maintenance mode
+**When to use** : If you want to turn off maintenance mode, you can use resume command and patroni will start managing the cluster
+
+```sh
+patronictl -c /etc/patroni/patroni.yaml resume
+```
+
+## patronictl list
+
+List all nodes and it's role, status. You can use it for checking status of all nodes, which is the master and which all are slaves/replicas.
+**When to use** : To check list and status of all nodes in the cluster, you can get all the information about nodes including if any restart is required for any node
+
+```sh
+patronictl -c /etc/patroni/patroni.yaml list
+```
+
+## patronictl restart
+
+It will restart single node in the postgres cluster or all nodes(complete cluster). Patroni will do the rolling restart for postgres on all nodes.
+**When to use** : Sometimes you need to restart all nodes in the cluster without downtime, you can use this command for rolling restart
+
+```sh
+# Restart particular node in cluster
+patronictl -c /etc/patroni/patroni.yaml restart <CLUSTER_NAME> <NODE_NAME>
+```
+
+```sh
+# Restart whole cluster(all nodes in cluster)
+patronictl -c /etc/patroni/patroni.yaml restart <CLUSTER_NAME>
+```
+
+## patronictl reinit
+
+It will reinitialize node in the cluster. If you want to reinitialize particular replica or slave node you can reinitialize node using reinit command.
+**When to use** : patronictl reinit command allows you to reinitialize a specific node and can be utilized when a cluster node experiences failure in starting or displays an unknown status for the node in the cluster . It is often useful in cases where a node has corrupt data.
+
+```sh
+patronictl -c /etc/patroni/patroni.yaml reinit <CLUSTER_NAME> <NODE_NAME>
+```
+
+# 💡Pro-Tip:
+
+Instead of using `-c /etc/patroni/patroni.yaml`  with patronictl you can set alias in your .profile file
+
+`alias patronictl='patronictl -c /etc/patroni/patroni.yaml'` 
+
+
