@@ -4,10 +4,10 @@ date: 2024-09-01
 categories:
 - Patroni
 tags:
-- posgresql
+- postgresql
 - patroni
 - ha
-- etc
+- etcd
 keywords:
 - sql
 summary: Patroni cluster for Postgresql databases
