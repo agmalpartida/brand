@@ -112,4 +112,151 @@ etcdctl endpoint status --write-out=table --endpoints=etcd1:2379,etcd2:2379,etcd
 
 # Patroni and Postgres Installation
 
+```sh
+sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo apt-get update
+sudo apt-get -y install postgresql
+```
+
+1. Install Patroni service
+
+`pip install patroni` 
+
+You need to install extra package required for connecting to etcd
+
+`pip3 install python-etcd` 
+
+2. Enable Patroni service
+
+`systemctl enable patroni` 
+
+3. Create configuration file and required directories for patroni:
+
+```sh
+mkdir -p /etc/patroni/logs/ #directory to store logs
+chmod 777 /etc/patroni/logs 
+```
+
+4. Create config file for patroni as below (/etc/patroni/patroni.yml)
+
+`touch /etc/patroni/patroni.yml` 
+
+```sh
+scope: bootvar_cluster
+name: pgdb1
+
+log:
+  traceback_level: INFO
+  level: INFO
+  dir: /etc/patroni/logs/
+  file_num: 5
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: 192.168.56.201:8008
+
+etcd:
+  protocol: http
+  hosts: 192.168.56.201:2379,192.168.56.203:2379,192.168.56.203:2379
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout : 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        wal_keep_segments: 100
+        #add other postgres DB parameters to start with
+
+  initdb:
+  - encoding: UTF8
+  - data-checksums
+
+  pg_hba:
+  - host replication replicator 0.0.0.0/0 md5
+  - host all all 0.0.0.0/0 md5
+
+postgresql:
+  listen: 192.168.56.204:5432
+  connect_address: 192.168.56.204:5432
+  data_dir: /var/lib/pgsql/bootvar/pgdb1/data
+  bin_dir: /usr/pgsql-12/bin
+  authentication:
+    replication:
+      username: replicator
+      password: replicator
+    superuser:
+      username: postgres
+      password: postgres
+```
+
+5. Start Patroni
+
+`service patroni start` 
+
+Repeat same procedure on all three nodes, for any issues you can set `log.level` and `log.traceback_level` to **DEBUG**.
+Once all nodes are up and running you can check status of patroni cluster using patronictl utility.
+
+`patronictl -c /etc/patroni/patroni.yml list` 
+
+Now patroni cluster is ready to use, you can start playing around and do some replication and failover tests.
+
+After this we need to setup load balancer to point it to active (Leader) Postgres database. For this you need two HAProxy servers or if you are setting this on cloud you can use load balancers provided by cloud provider.
+
+# Install load balancer
+
+1. Install HAProxy on both servers:
+
+`apt install haproxy` 
+
+2. Configure haproxy.cfg file to redirect all traffic to active postgres leader. 
+
+```sh
+global
+    maxconn 100
+
+defaults
+    log global
+    mode tcp
+    retries 2
+    timeout client 30m
+    timeout connect 4s
+    timeout server 30m
+    timeout check 5s
+
+listen stats
+    mode http
+    bind *:7000
+    stats enable
+    stats uri /
+
+listen boorvar_cluster
+    bind *:5432
+    option httpchk
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+    server pgdb1_5432 192.168.56.204:5432 maxconn 100 check port 8008
+    server pgdb2_5432 192.168.56.205:5432 maxconn 100 check port 8008
+    server pgdb3_5432 192.168.56.206:5432 maxconn 100 check port 8008
+```
+
+**Note** : Haproxy will check 8008 port of pgdb servers and if it returns 200 status then it will redirect all traffic to the leader. This 8008 port is configured in Patroni.
+
+3. Start haproxy on both nodes
+
+`service haproxy start` 
+
+Once haproxy is started you can check status by hitting url http://haproxy1:7000
+You can see all connections on haproxy:5432 will be redirected to pgdb1:5432, you can check if pgdb1 is the leader or not.
+Now try connecting to the cluster using haproxy host, it should get redirected to leader.
+
+# Application side Configuration:
+
+As we have two HAProxy servers application should be configured in such a way that it should point to both servers, submit the request to available server and if application does not support such case then you need to set up virtual IP which will point to available HAProxy server.
+
 
