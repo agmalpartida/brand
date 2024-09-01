@@ -255,6 +255,42 @@ Once haproxy is started you can check status by hitting url http://haproxy1:7000
 You can see all connections on haproxy:5432 will be redirected to pgdb1:5432, you can check if pgdb1 is the leader or not.
 Now try connecting to the cluster using haproxy host, it should get redirected to leader.
 
+# Setting up software watchdog on Linux
+
+Default Patroni configuration will try to use /dev/watchdog on Linux if it is accessible to Patroni. For most use cases using software watchdog built into the Linux kernel is secure enough.
+
+To enable software watchdog issue the following commands as root before starting Patroni:
+
+`modprobe softdog` 
+
+```sh
+# Replace postgres with the user you will be running patroni under
+chown postgres /dev/watchdog
+```
+
+For testing it may be helpful to disable rebooting by adding `soft_noboot=1`  to the modprobe command line. In this case the watchdog will just log a line in kernel ring buffer, visible via dmesg.
+
+Patroni will log information about the watchdog when it is successfully enabled.
+
+```sh
+modprobe softdog
+lsmod|grep softdog
+
+$  ls -l /dev/watchdog
+crw-rw---- 1 postgres postgres 10, 130 Aug 15 19:08 /dev/watchdog
+
+systemctl stop postgresql
+sh -c 'echo "softdog" >> /etc/modules'
+sh -c 'echo "KERNEL==\"watchdog\", OWNER=\"postgres\", GROUP=\"postgres\"" >> /etc/udev/rules.d/61-watchdog.rules'
+vi /lib/modprobe.d/blacklist_linux_5.4.0-73-generic.conf
+grep blacklist /lib/modprobe.d/* /etc/modprobe.d/* |grep softdog
+vi /lib/modprobe.d/blacklist_linux_5.15.0-53-generic.conf
+modprobe softdog
+lsmod | grep softdog
+ls -l /dev/watchdog*
+chown postgres:postgres /dev/watchdog*
+```
+
 # Application side Configuration:
 
 As we have two HAProxy servers application should be configured in such a way that it should point to both servers, submit the request to available server and if application does not support such case then you need to set up virtual IP which will point to available HAProxy server.
