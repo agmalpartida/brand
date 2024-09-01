@@ -1,5 +1,5 @@
 ---
-Title: Systemd: Logging
+Title: Systemd Logging
 date: 2024-09-01
 categories:
 - Linux

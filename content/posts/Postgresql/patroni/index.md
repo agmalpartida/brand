@@ -1,6 +1,6 @@
 ---
 Title: Postgresql HA with Patroni
-date: 
+date: 2024-09-01
 categories:
 - Postgresql
 tags:

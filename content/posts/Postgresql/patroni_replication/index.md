@@ -1,6 +1,6 @@
 ---
 Title: Patroni Replication
-date: 
+date: 2024-09-01
 categories:
 - Postgresql
 tags:

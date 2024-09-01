@@ -1,6 +1,6 @@
 ---
 Title: Patroni Set up
-date: 
+date: 2024-09-01
 categories:
 - Patroni
 tags:
