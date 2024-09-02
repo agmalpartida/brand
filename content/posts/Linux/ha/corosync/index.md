@@ -1,12 +1,13 @@
 ---
 Title: Corosync and Pacemaker cluster
-date: 2024-09-01
+date: 2024-09-02 
 categories:
 - Linux
 tags:
 - corosync
 - pacemaker
 - ha
+- linux
 keywords:
 - ha
 summary: Setting a cluster up and running
