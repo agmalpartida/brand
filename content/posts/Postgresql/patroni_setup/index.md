@@ -23,7 +23,7 @@ showActions: false
 Once downloaded unzip and copy binaries to your /usr/bin
 
 ```sh
-gtar –xvf etcd-v3.5.0-linux-amd64.tar.gz
+tar xvzf etcd-v3.5.0-linux-amd64.tar.gz
 cd etcd-v3.5.0-linux-amd64/
 cp etcd etcdctl etcdutl /usr/bin
 ```
