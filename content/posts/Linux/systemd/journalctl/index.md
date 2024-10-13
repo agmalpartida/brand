@@ -16,6 +16,17 @@ showMeta: false
 showActions: false
 ---
 
+# Useful commands
+
+```sh
+journalctl -xe -f
+sudo journalctl --rotate
+sudo journalctl --vacuum-time=1s
+
+--since "2019-01-30 14:00:00"
+--since today
+```
+
 # Configuration
 
 ## Size
