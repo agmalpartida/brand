@@ -12,6 +12,7 @@ showMeta: false
 showActions: false
 ---
 
+
 ## CNI plugins
 
 CNI (**Container Network Interface**) is a standard API which allows different network implementations to plug into Kubernetes. Kubernetes calls the API any time a pod is being created or destroyed. There are two types of CNI plugins:

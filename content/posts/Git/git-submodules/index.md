@@ -1,13 +1,17 @@
-+++
-categories = ['Git']
-comments = false
-showActions = false
-showMeta = false
-summary = 'Git Submodules'
-tags = ['git']
-title = 'Git Submodules'
-+++
-## Using submodules in Git
+---
+Title: "Git Submodules"
+date: 2024-10-19
+categories:
+- Git
+tags:
+- git
+keywords:
+- git
+summary: "Git Submodules"
+comments: false
+showMeta: false
+showActions: false
+---
 
 ### Using Git repositories inside other Git repositories
 

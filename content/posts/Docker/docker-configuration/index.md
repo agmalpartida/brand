@@ -1,18 +1,23 @@
-+++
-categories = ['Docker']
-comments = false
-keywords = ['containers']
-showActions = false
-showMeta = false
-tags = ['docker']
-title = 'Docker Configuration Overview'
-+++
+---
+Title: "Docker"
+date: 2024-10-19
+categories:
+  - Docker
+tags:
+  - docker
+keywords:
+  - docker
+summary: "Docker Configuration Overview"
+comments: false
+showMeta: false
+showActions: false
+---
 
 ## Overview
 
-![](images/dk.jpg)
+![Docker Image](images/dk.jpg)
 
 ## Networking
 
-![](images/dk-net.jpg)
+![Docker Networking](images/dk-net.jpg)
 

@@ -1,7 +1,6 @@
 baseURL = "http://localhost:1313"
 title = "Development Environment"
 
-paginate = 5
 theme = "PaperMod"
 enableInlineShortcodes = true
 enableRobotsTXT = true
@@ -11,34 +10,45 @@ buildExpired = false
 enableEmoji = true
 pygmentsUseClasses = true
 mainsections = ["posts", "papermod"]
+googleAnalytics = "G-6EH7910J7K"
+
+# Se reemplaza paginate por pagerSize, según la advertencia
+[pagination]
+pagerSize = 10
 
 [minify]
 disableXML = true
 
 [languages]
-[languages.en]
-languageName = "English"
-weight = 1
-[languages.en.taxonomies]
-category = "categories"
-tag = "tags"
-series = "series"
-[languages.en.menu]
+  [languages.en]
+  languageName = "English"
+  weight = 1
+  
+  [languages.en.taxonomies]
+    category = "categories"
+    tag = "tags"
+    series = "series"
 
-[[languages.en.menu.main]]
-name = "Search"
-url = "search/"
-weight = 10
+  [languages.en.menu]
 
-[[languages.en.menu.main]]
-name = "Tags"
-url = "tags/"
-weight = 10
+    [[languages.en.menu.main]]
+    name = "Search"
+    url = "search/"
+    weight = 10
+
+    [[languages.en.menu.main]]
+    name = "Tags"
+    url = "tags/"
+    weight = 10
 
 [outputs]
 home = ["HTML", "RSS", "JSON"]
 
 [params]
+social = [
+  { name = "github", url = "https://github.com/agmalpartida", title = "(〃'▽'〃)" },
+  { name = "linkedin", url = "https://www.linkedin.com/in/agmalpartida/", title = "" }
+]
 env = "production"
 description = ""
 author = "Alberto"
@@ -55,26 +65,20 @@ ShowAllPagesInArchive = false
 ShowPageNums = true
 ShowToc = true
 TocOpen = true
-extendCodeBackgroud = true
-hideFooter = true
 images = ["images/logo.png"]
+extendCodeBackground = true
+hideFooter = true
+VisitCount = true
+
 [params.profileMode]
 enabled = true
 title = "Alberto Galvez"
 
-[[params.socialIcons]]
-name = "github"
-title = "(〃'▽'〃)"
-url = "https://github.com/agmalpartida"
-
-[[params.socialIcons]]
-name = "linkedin"
-title = ""
-url = "https://www.linkedin.com/in/agmalpartida/"
 [params.editPost]
 URL = "https://github.com/agmalpartida/brand/tree/published/content"
 Text = "Suggest Changes"
 appendFilePath = true
+
 [params.assets]
 disableHLJS = true
 favicon = "img/favicon.png"
@@ -82,7 +86,7 @@ favicon16x16 = "img/favicon.png"
 favicon32x32 = "img/favicon.png"
 apple_touch_icon = "img/favicon.png"
 safari_pinned_tab = "img/favicon.png"
-disableFingerprinting = true
+# disableFingerprinting = true
 
 [params.fuseOpts]
 isCaseSensitive = false
@@ -94,12 +98,15 @@ minMatchCharLength = 0
 keys = ["title"]
 
 [markup]
-[markup.highlight]
-codeFences = true
-guessSyntax = true
-lineNos = true
-noClasses = false
-style = "monokai"
-[markup.goldmark]
-[markup.goldmark.renderer]
-unsafe = true
+  [markup.highlight]
+  codeFences = true
+  guessSyntax = true
+  lineNos = true
+  noClasses = false
+  style = "monokai"
+
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+    unsafe = true
+
+
