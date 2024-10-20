@@ -1,4 +1,4 @@
-name: Hugo
+name: production-deploy
 
 on:
   push:
@@ -7,33 +7,45 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
-          submodules: false
+          submodules: true
           fetch-depth: 0
 
-      - name: Install Hugo
+      - name: install hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: '0.108.0'
-          extended: false
+          hugo-version: 'latest'
 
-      - name: Build Website
+      - name: clean up
+        run: |
+          if [ -d "public" ]; then
+            rm -rf public
+          fi
+
+      - name: setup
+        id: vars
+        run: |
+          echo "::set-output name=commit_msg::$(git log -1 --pretty=%B)"
+          git worktree add public gh-pages
+
+      - name: build
         run: hugo --minify
 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.DEPLOY_KEY }} 
-          known_hosts: 'placeholder' # to make it work
+      - name: commit
+        run: |
+          cd public
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          if [ "`git status -s`" ]
+          then
+            git add --all
+            git commit -am "deployed: ${{ steps.vars.outputs.commit_msg }}"
+          fi     
 
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.DEPLOY_HOST_IP }} >> ~/.ssh/known_hosts
-
-      - name: Deploy with rsync
-        run: rsync -avz --delete ./public/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST_IP }}:${{ secrets.DEPLOY_PATH }}
-
+      - name: deploy
+        run: git push --all
