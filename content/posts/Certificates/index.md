@@ -49,6 +49,8 @@ openssl rsa -in ssl.key -pubout
 
 ## PFX
 
+>**Note**: You can try directly specifying the use of the legacy provider in the command, which may force OpenSSL to load the deprecated algorithms at runtime:
+
 - Export private key
 ```bash
 openssl pkcs12 -legacy -in tu_certificado.pfx -nocerts -out clave_privada.pem -nodes
