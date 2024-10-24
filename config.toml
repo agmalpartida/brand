@@ -9,7 +9,7 @@ buildExpired = false
 enableEmoji = true
 pygmentsUseClasses = true
 mainsections = ["posts", "papermod"]
-googleAnalytics = "G-6EH7910J7K"
+# googleAnalytics = ""
 
 # Se reemplaza paginate por pagerSize, según la advertencia
 [pagination]
