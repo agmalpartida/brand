@@ -1,4 +1,4 @@
-baseURL = "https://albertogalvez.com/"
+baseURL = "https://blog.albertogalvez.com/"
 title = "AG"
 theme = "PaperMod"
 enableInlineShortcodes = true
