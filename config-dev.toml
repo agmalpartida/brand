@@ -45,7 +45,7 @@ disableXML = true
 home = ["HTML", "RSS", "JSON"]
 
 [params]
-social = [
+socialIcons = [
   { name = "github", url = "https://github.com/agmalpartida", title = "(〃'▽'〃)" },
   { name = "linkedin", url = "https://www.linkedin.com/in/agmalpartida/", title = "" }
 ]
