@@ -9,8 +9,8 @@ buildFuture = false
 buildExpired = false
 enableEmoji = true
 pygmentsUseClasses = true
-mainsections = ["posts", "papermod"]
-googleAnalytics = "G-6EH7910J7K"
+mainsections = ["posts"]
+# googleAnalytics = ""
 
 # Se reemplaza paginate por pagerSize, según la advertencia
 [pagination]
@@ -73,6 +73,7 @@ VisitCount = true
 [params.profileMode]
 enabled = true
 title = "Alberto Galvez"
+showIcons = true
 
 [params.editPost]
 URL = "https://github.com/agmalpartida/brand/tree/published/content"
