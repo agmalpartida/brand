@@ -52,14 +52,14 @@ env = "production"
 description = ""
 author = "Alberto"
 defaultTheme = "auto"
-DateFormat = "2006-12-30"
-ShowShareButtons = false
+DateFormat = "2006-12-3"
+ShowShareButtons = true
 ShowReadingTime = false
 displayFullLangName = true
 ShowPostNavLinks = true
 ShowBreadCrumbs = true
 ShowCodeCopyButtons = true
-ShowRssButtonInSectionTermList = false
+ShowRssButtonInSectionTermList = true
 ShowAllPagesInArchive = false
 ShowPageNums = true
 ShowToc = true
@@ -74,7 +74,7 @@ enabled = true
 title = "Alberto Galvez"
 
 [params.editPost]
-URL = "https://github.com/agmalpartida/brand/tree/published/content"
+URL = "https://github.com/agmalpartida/brand/tree/main/content"
 Text = "Suggest Changes"
 appendFilePath = true
 
