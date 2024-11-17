@@ -4,8 +4,7 @@ date: 2024-11-17
 categories:
 - VPN
 tags:
-- VPN
-- IPSec
+- vpn 
 keywords:
 - vpn
 summary: ""
