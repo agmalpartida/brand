@@ -1,22 +1,24 @@
 ---
-Title: "Security Concepts"
-date: 2024-11-17
+Title: "VIM - Movements"
+date: 2024-12-14
 categories:
-- Security
+- VIM
 tags:
-- security
+- vim
 keywords:
-- security
+- vim
 summary: ""
 comments: false
 showMeta: false
 showActions: false
 ---
 
-# Concepts
+# Split windows
 
-- An Intrusion Prevention System (IPS) is a type of engine that identifies malicious traffic by checking the signatures. The signatures contain known traffic patterns or instruction sequences used by malware. This type of signature-based engine can only detect anomalies based on known malicious traffic patterns.
+- C-w w switches between 2 open windows.
 
-- An Intrusion Detection System (IDS) is a network security technology originally built for detecting vulnerability exploits against a target application or computer. IDS only listens for issues and alerts you and does not take preventative action.
-
+  - C-w s opens a new split window.
+  - C-w w switches between open windows.
+  - C-w o keeps the current window and closes the rest.
+  - C-w c closes the current window.
 
