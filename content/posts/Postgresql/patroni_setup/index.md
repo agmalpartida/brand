@@ -109,6 +109,21 @@ etcdctl endpoint status --write-out=table --endpoints=etcd1:2379,etcd2:2379,etcd
 
 **Note** : By default etcd does not support v2 API, in case patroni fails to start with the api error, add --enable-v2 flag in etcd service
 
+## Troubleshooting
+
+- Check connection to etcd:
+
+```sh
+curl http://10.201.217.181:2379/version
+```
+
+- Failover: check if a node has the nofailover tag
+
+```sh
+curl -s http://127.0.0.1:8008/config | jq
+```
+
+
 
 # Patroni and Postgres Installation
 
@@ -119,13 +134,12 @@ sudo apt-get update
 sudo apt-get -y install postgresql
 ```
 
-1. Install Patroni service
+1. Install Patroni service. You need to install extra package required for connecting to etcd.
 
-`pip install patroni` 
-
-You need to install extra package required for connecting to etcd
-
-`pip3 install python-etcd` 
+```sh
+apt install patroni
+apt install python3-etcd3
+```
 
 2. Enable Patroni service
 
@@ -208,7 +222,76 @@ Now patroni cluster is ready to use, you can start playing around and do some re
 
 After this we need to setup load balancer to point it to active (Leader) Postgres database. For this you need two HAProxy servers or if you are setting this on cloud you can use load balancers provided by cloud provider.
 
+## Troubleshooting
+
+```sh
+journalctl -xeu patroni.service -l --no-pager
+
+tail -f /var/logs/patroni/patroni.log
+
+patroni --version
+
+apt install yamllint
+yamllint /etc/patroni/config.yml
+
+```
+
+
+- Check health
+
+```sh
+$  curl -q http://10.201.217.181:8008|jq
+{
+  "state": "unknown",
+  "role": "replica",
+  "cluster_unlocked": true,
+  "dcs_last_seen": 1728642083,
+  "database_system_identifier": "7424449856666054686",
+  "pending_restart": true,
+  "pending_restart_reason": {
+    "max_wal_senders": {
+      "old_value": "10",
+      "new_value": "5"
+    }
+  },
+  "patroni": {
+    "version": "4.0.2",
+    "scope": "devpsql_cluster",
+    "name": "devpsql01.fullstep.cloud"
+  }
+}
+```
+
+## Operations
+
+- Apply Changes with Reload
+
+If Patroni indicates that there is a pending_restart, you can apply the configuration changes by running the Patroni reload command.
+
+```sh
+$  curl -X POST http://10.201.217.181:8008/reload
+reload scheduled
+```
+
+- Replication status on the leader: On the leader node (psql01), check if it correctly detects psql03 as a replica:
+
+```sql
+SELECT application_name, state, sync_state, client_addr, replay_lsn
+FROM pg_stat_replication;
+```
+
+- Check ports:
+
+```sh
+nc -zv 10.201.217.181 2379
+```
+
+
 # Install load balancer
+
+After this we need to setup load balancer to point it to active (Leader) Postgres database. For this you need two HAProxy servers or if you are setting this on cloud you can use load balancers provided by cloud provider.
+
+
 
 1. Install HAProxy on both servers:
 
