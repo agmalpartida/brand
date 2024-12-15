@@ -15,8 +15,13 @@ showMeta: false
 showActions: false
 ---
 
-# Overview
+# High Availability in PostgreSQL with Patroni
+
+## Overview
+
 [Reference](https://patroni.readthedocs.io/en/latest/) 
+
+PostgreSQL has been widely adopted as a modern, high-performance transactional database. A highly available PostgreSQL cluster can withstand failures caused by network outages, resource saturation, hardware failures, operating system crashes or unexpected reboots. Such cluster is often a critical component of the enterprise application landscape, where four nines of availability is a minimum requirement. 
 
 Patroni is best candidate to choose for HA and DR setup. Also if you know little bit of Python you can easily read the code and change it according to your needs. Patroni also provides REST APIs to automate things on top of the existing functionalities.
 
@@ -32,7 +37,7 @@ Here we have used 8 VMs to avoid SPOF and achieve High Availability on Postgres.
 
 ![patroni](./images/patroni-architecture.png) 
 
-# What does Patroni do?
+## What does Patroni do?
 
 Basically, everything you need to run highly available PostgreSQL clusters!
 Patroni creates the cluster, initiates streaming replication, handles synchronicity requirements, monitors liveliness of primary and replica, can change the configuration of all cluster members, issues reload commands and restarts selected cluster members, handles planned switchovers and unplanned failovers, rewinds a failed primary to bring it back in line and reinitiates all replication connections to point to the newly promoted primary.
@@ -50,9 +55,37 @@ The distributed key-value store, for example etcd or consul, enables atomic mani
 
 Some of the data collected by Patroni is also exhibited through a ReST interface, which can be useful for monitoring purposes as well as for applications to select which PostgreSQL instance to connect to.
 
+## High availability methods
+
+Why native streaming replication is not enough
+
+Although the native streaming replication in PostgreSQL supports failing over to the primary node, it lacks some key features expected from a truly highly-available solution. These include:
+
+- No consensus-based promotion of a “leader” node during a failover
+- No decent capability for monitoring cluster status
+- No automated way to bring back the failed primary node to the cluster
+- A manual or scheduled switchover is not easy to manage
+
+To address these shortcomings, there are a multitude of third-party, open-source extensions for PostgreSQL. The challenge for a database administrator here is to select the right utility for the current scenario.
+
+Percona Distribution for PostgreSQL solves this challenge by providing the Patroni extension for achieving PostgreSQL high availability.
+
+There are several native methods for achieving high availability with PostgreSQL:
+
+- shared disk failover,
+- file system replication,
+- trigger-based replication,
+- statement-based replication,
+- logical replication,
+- Write-Ahead Log (WAL) shipping, and
+- streaming replication
+
+
+![](./images/4nines.png) 
+
 # Software & Hardware
 
-## [ETCD](https://etcd.io/) 
+# [ETCD](https://etcd.io/) 
 
 - Distributed Consensus Store (DCS): Patroni requires a DCS system, such as ETCD, Consul, or Zookeeper, to store vital configuration data and real-time status information of the nodes. We will use odd number (>1) of servers here we are using 3 nodes with minimum configuration.
 
@@ -62,13 +95,13 @@ The process of electing a leader involves making an attempt in Etcd to set an ex
 - Use a larger Etcd cluster to improve availability: if one Etcd node fails, it will not affect our Postgres servers.
 - Use **PgBouncer** to pool connections.
 
-## HAProxy
+# HAProxy
 - Load Balancer (e.g., HAProxy): A crucial element in the setup is a load balancer, like HAProxy. It plays a pivotal role in distributing incoming traffic across the PostgreSQL instances, ensuring all traffic should go to only master node. We will use two machines with minimum configuration - you can also utilize 1 HAProxy server but in this case we need to compromise on single point of failure.
 
 HAProxy monitors changes in the master/slave nodes and connects to the appropriate master node when clients request a connection. HAProxy determines which node is the master by calling the Patroni REST API. The Patroni REST API is configured to run on port 8008 in each database node.
 Failover Times: Failover times may not always be instantaneous, depending on the cluster’s state and the reasons for failover. There may be a short period of unavailability while a new leader is elected and the cluster is reconfigured.
 
-## PostgreSQL 
+# PostgreSQL 
 
 Version 9.5 and Above: Patroni seamlessly integrates with PostgreSQL versions 9.5 and higher, providing advanced features and reliability enhancements. This compatibility ensures that you can leverage the latest capabilities of PostgreSQL while maintaining high availability. Hardware configuration for these nodes is dependent on the database size. For setting up you can start with 2 cores and 8GB RAM.
 

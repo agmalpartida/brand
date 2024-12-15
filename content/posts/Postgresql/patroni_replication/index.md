@@ -30,6 +30,8 @@ While this method is useful for scenarios where the Recovery Point Objective (**
 # Streaming Replication
 
 Another approach that is more sophisticated is called streaming replication.
+Streaming replication is part of Write-Ahead Log shipping, where changes to the WALs are immediately made available to standby replicas. With this approach, a standby instance is always up-to-date with changes from the primary node and can assume the role of primary in case of a failover.
+
 When using streaming replication, single transaction log messages are reproduced to the replica and synchronicity requirements can be handled on a per-message basis.
 
 Streaming replication needs more setup - usually this involves creating a replication user and initiating the replication stream - but this pays off in terms of the recovery objectives.
