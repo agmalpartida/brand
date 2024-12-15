@@ -659,6 +659,178 @@ PgBouncer’s virtual tables are not accessible through traditional SQL queries 
 	•	SHOW USERS;: Users connected to PgBouncer.
 	•	SHOW CONFIG;: Current configuration parameters of PgBouncer.
 
+## Connections
+
+If you have PgBouncer configured and have also defined max_connections in Patroni, both configurations affect the system complementarily but independently.
+
+Explanation of the behavior:
+	•	max_connections in Patroni (PostgreSQL): This value limits the maximum number of connections PostgreSQL can accept directly, whether from PgBouncer or any external client. This is an absolute limit for PostgreSQL.
+If max_connections = 200, PostgreSQL will not accept more than 200 active simultaneous connections, including those from PgBouncer.
+	•	max_client_conn and default_pool_size in PgBouncer: These configurations control how PgBouncer handles client connections to PostgreSQL.
+	•	max_client_conn: Defines how many connections PgBouncer can accept from clients (applications).
+	•	default_pool_size: Defines how many connections PgBouncer keeps open with PostgreSQL for each database in the pool.
+
+PgBouncer uses a pooling model, which means that multiple clients can share a single connection to PostgreSQL.
+
+Which one takes precedence?
+
+Both limits are important, but the effective limit is defined by max_connections in Patroni. PgBouncer can handle more clients (max_client_conn), but it can only open connections to PostgreSQL up to the limit defined in max_connections.
+
+For example:
+	•	If max_connections = 200 in Patroni and default_pool_size = 20 in PgBouncer, PgBouncer can only open 200 connections to PostgreSQL in total (if multiple databases are connected, the pool is distributed among them).
+	•	If max_client_conn = 500 in PgBouncer, it can accept up to 500 client connections, but only 200 connections will be established to PostgreSQL at the same time.
+
+How to optimize this configuration:
+	•	Increase max_connections in Patroni if the server has enough capacity: Adjust the parameter in the patroni.yml file:
+
+```yaml
+postgresql:
+  parameters:
+    max_connections: 500
+```
+
+Restart Patroni to apply the changes.
+	•	Configure default_pool_size in PgBouncer based on needs:
+	•	Set a reasonable pool size based on the expected load.
+	•	For example, if you expect 500 concurrent clients and have 200 available connections in PostgreSQL, a default_pool_size = 10 could be enough to distribute the load.
+	•	Monitor connection usage: Use views like pg_stat_activity and PgBouncer statistics to ensure you’re not hitting the limits:
+
+```sql
+SELECT * FROM pg_stat_activity;
+```
+
+```sh
+psql -h <host_pgBouncer> -p 6432 -U <user> pgbouncer
+SHOW POOLS;
+```
+
+Conclusion:
+
+The max_connections limit in Patroni takes precedence, as PostgreSQL cannot exceed this number of active connections. PgBouncer helps distribute and optimize client connections, but it must be properly configured to ensure it doesn’t exceed this limit. If you expect to handle many clients, it’s advisable to use PgBouncer with a high max_client_conn and adjust max_connections in Patroni according to available resources.
+
+# HAProxy vs PgBouncer
+
+While HAProxy handles distributing connections between the nodes of your Patroni cluster, PgBouncer remains useful as a connection pool to optimize the management of connections to PostgreSQL.
+
+Here’s how HAProxy and PgBouncer interact and how to handle this combination.
+
+Roles of HAProxy and PgBouncer in this context:
+	•	HAProxy:
+	•	Acts as the network-level load balancer, distributing incoming connections across the Patroni cluster nodes.
+	•	Determines which node to send traffic to based on the node’s status (leader or follower).
+	•	PgBouncer:
+	•	Not a load balancer per se, but a connection pool manager.
+	•	Reduces the load on PostgreSQL by reusing existing connections, especially in applications that generate many short-lived or burst connections.
+	•	Complements HAProxy by optimizing the number of active connections on the cluster nodes.
+
+Is it necessary to use both?
+
+Yes, in many cases. Using PgBouncer alongside HAProxy is a common practice in high-load systems because they address different issues:
+	•	HAProxy balances traffic between nodes.
+	•	PgBouncer manages connections to a node, reducing the impact of many concurrent connections.
+
+Without PgBouncer, every connection passing through HAProxy reaches PostgreSQL directly, which could overload the max_connections on the server.
+
+Recommended Architecture
+	•	HAProxy balances client connections to PgBouncer.
+	•	PgBouncer resides on each PostgreSQL node, optimizing connection usage on that node.
+
+The flow would be:
+
+Clients → HAProxy → PgBouncer (on each node) → PostgreSQL
+
+This allows:
+	•	HAProxy to determine the correct node for connections.
+	•	PgBouncer to limit and optimize connections to PostgreSQL.
+
+Configuration in a Combined Environment
+	1.	HAProxy Configuration
+
+HAProxy is configured to route traffic to the leader or followers depending on usage:
+	•	In the HAProxy configuration file (haproxy.cfg):
+
+```
+frontend pgsql_frontend
+    bind *:5432
+    mode tcp
+    default_backend pgsql_backend
+
+backend pgsql_backend
+    mode tcp
+    option tcp-check
+    balance roundrobin
+    server pg1 192.168.1.101:6432 check
+    server pg2 192.168.1.102:6432 check
+    server pg3 192.168.1.103:6432 check
+```
+
+In this example, HAProxy sends traffic to the PgBouncer port (6432) on each node.
+	2.	PgBouncer Configuration
+
+PgBouncer is configured to optimize connections on each PostgreSQL node.
+	•	In the PgBouncer configuration file (pgbouncer.ini):
+
+```ini
+[databases]
+mydb = host=127.0.0.1 port=5432 dbname=mydb auth_user=pgbouncer_user
+
+[pgbouncer]
+listen_addr = 0.0.0.0
+listen_port = 6432
+auth_type = md5
+auth_file = /etc/pgbouncer/userlist.txt
+pool_mode = transaction
+max_client_conn = 500
+default_pool_size = 50
+```
+
+	•	listen_port is the port where PgBouncer listens (matching the port configured in HAProxy).
+	•	pool_mode is recommended as transaction for Patroni clusters, as it avoids issues with leader changes.
+
+	3.	Ensuring Consistency in Failover
+
+When a failover occurs in Patroni, HAProxy must automatically redirect traffic to the new leader. You can configure a health check in HAProxy to validate the leader node via Patroni’s REST endpoint:
+
+```
+backend pgsql_backend
+    mode tcp
+    option httpchk GET /master
+    http-check expect status 200
+    server pg1 192.168.1.101:6432 check
+    server pg2 192.168.1.102:6432 check
+    server pg3 192.168.1.103:6432 check
+```
+
+This ensures that only the leader node receives write traffic.
+
+What about the current error?
+
+The “This connection has been closed” error you mentioned likely occurs because:
+	•	The number of simultaneous connections in PostgreSQL (max_connections) is insufficient:
+	•	Increase max_connections in Patroni to support more connections.
+	•	PgBouncer will help optimize the use of these connections.
+	•	The connection timeout is too short:
+	•	Increase timeout values in HAProxy and PgBouncer to prevent connections from closing prematurely.
+
+In HAProxy, you can adjust the timeout with:
+
+```
+timeout client 60s
+timeout server 60s
+timeout connect 10s
+```
+
+In PgBouncer:
+
+```
+server_idle_timeout = 600
+```
+
+Conclusion
+	•	Use PgBouncer to optimize connections at the node level.
+	•	HAProxy remains the main load balancer between nodes.
+	•	Adjust max_connections, timeouts, and pool sizes to support the load.
+
 # Application side Configuration:
 
 As we have two HAProxy servers application should be configured in such a way that it should point to both servers, submit the request to available server and if application does not support such case then you need to set up virtual IP which will point to available HAProxy server.
