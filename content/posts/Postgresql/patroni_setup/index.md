@@ -394,7 +394,7 @@ FROM pg_stat_replication;
 nc -zv 10.201.217.181 2379
 ```
 
-# Install load balancer
+# HAProxy: Install load balancer
 
 After this we need to setup load balancer to point it to active (Leader) Postgres database. For this you need two HAProxy servers or if you are setting this on cloud you can use load balancers provided by cloud provider.
 
