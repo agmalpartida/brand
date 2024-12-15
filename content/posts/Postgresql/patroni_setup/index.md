@@ -123,6 +123,12 @@ curl http://10.201.217.181:2379/version
 curl -s http://127.0.0.1:8008/config | jq
 ```
 
+Remove nofailover tag:
+
+```sh
+curl -XPATCH -d '{"tags": {"nofailover": false}}' http://127.0.0.1:8008/config
+```
+
 
 
 # Patroni and Postgres Installation
@@ -207,6 +213,56 @@ postgresql:
     superuser:
       username: postgres
       password: postgres
+```
+
+In the bootstrap section of your Patroni configuration, Patroni automatically creates the users defined under the users key when initializing the PostgreSQL cluster. You do not need to create these users manually before starting PostgreSQL; Patroni will handle it when the cluster starts.
+
+- Cluster Initialization:
+
+When Patroni runs for the first time, it creates the PostgreSQL cluster if it doesn’t already exist. During this process, it applies the configurations defined in the bootstrap section.
+
+- User Creation:
+
+The users defined under the users key in your configuration will be created automatically. If there are errors during Patroni startup, the users may not be created.
+
+- User Verification:
+
+Once the cluster is running, you can connect to PostgreSQL to verify that the users were created correctly:
+
+```sh
+psql -h 10.201.217.181 -U postgres -d postgres -c "\du"
+```
+
+This should display a list of users, including admin and replicator, that Patroni created during the initialization process.
+
+4.1. Bootstrap Section
+
+```yaml
+users:  
+  admin:  
+    password: V/$QjLxf2022.-  
+    options:  
+      - createrole  
+      - createdb  
+  replicator:  
+    password: fxN^vruL2022.-  
+    options:  
+      - replication  
+```
+
+•	admin: This user is created during cluster initialization and has permissions to create roles and databases. It is an administrative user typically used for management tasks.
+•	replicator: This user is also created during initialization and is specifically used for replication tasks. The replication option grants it permission to connect as a replication user.
+
+4.2. PostgreSQL Section
+
+```yaml
+authentication:  
+  replication:  
+    username: replicator  
+    password: fxN^vruL2022.-  
+  superuser:  
+    username: postgres  
+    password: postgres  
 ```
 
 5. Start Patroni

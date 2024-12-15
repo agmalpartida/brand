@@ -195,6 +195,32 @@ It will make selected replica as master node basically will switch all traffic t
 patronictl -c /etc/patroni/patroni.yaml switchover
 ```
 
+```sh
+$  patronictl -c /etc/patroni/patroni.yml switchover
+
+Current cluster topology
++ Cluster: psqlcluster01 (7438272857781061312) -+---------+-----------+----+-----------+
+| Member                | Host                  | Role    | State     | TL | Lag in MB |
++-----------------------+-----------------------+---------+-----------+----+-----------+
+| psql01.fullstep.cloud | psql01.fullstep.cloud | Replica | streaming | 39 |         0 |
+| psql02.fullstep.cloud | psql02.fullstep.cloud | Leader  | running   | 39 |           |
+| psql03.fullstep.cloud | psql03.fullstep.cloud | Replica | streaming | 39 |         0 |
++-----------------------+-----------------------+---------+-----------+----+-----------+
+Primary [psql02.fullstep.cloud]:
+Candidate ['psql01.fullstep.cloud', 'psql03.fullstep.cloud'] []: psql01.fullstep.cloud
+When should the switchover take place (e.g. 2024-12-03T15:20 )  [now]:
+Are you sure you want to switchover cluster psqlcluster01, demoting current leader psql02.fullstep.cloud? [y/N]: y
+2024-12-03 14:20:54.93003 Successfully switched over to "psql01.fullstep.cloud"
++ Cluster: psqlcluster01 (7438272857781061312) -+---------+----------+----+-----------+
+| Member                | Host                  | Role    | State    | TL | Lag in MB |
++-----------------------+-----------------------+---------+----------+----+-----------+
+| psql01.fullstep.cloud | psql01.fullstep.cloud | Leader  | running  | 40 |           |
+| psql02.fullstep.cloud | psql02.fullstep.cloud | Replica | stopping |    |   unknown |
+| psql03.fullstep.cloud | psql03.fullstep.cloud | Replica | running  | 39 |         0 |
++-----------------------+-----------------------+---------+----------+----+-----------+
+```
+
+
 ## patronictl pause
 
 Patroni will stop managing postgres cluster and will turn on the maintenance mode. If you want to do some manual activities for maintenance you need to stop patroni from auto managing cluster.
@@ -253,3 +279,28 @@ Instead of using `-c /etc/patroni/patroni.yaml`  with patronictl you can set ali
 `alias patronictl='patronictl -c /etc/patroni/patroni.yaml'` 
 
 
+# API
+
+Patroni’s API typically has an endpoint (/health) that allows you to check if a node is healthy, and within its response, it indicates whether the node is a leader or a replica.
+
+Check the status of Patroni’s HTTP API on each node:
+Use curl to manually check how each node (leader and replicas) responds on port 8008.
+
+```sh
+curl http://10.201.217.181:8008
+```
+
+Manual verification: Use curl to check the /leader and /replica endpoints or any other endpoints exposed by Patroni.
+
+```sh
+curl http://10.201.217.181:8008/leader
+curl http://10.201.217.182:8008/replica
+```
+
+It is useful to verify that Patroni’s /health endpoint works correctly on each node.
+
+```sh
+curl http://172.20.20.211:8008/health|jq
+curl http://172.20.20.212:8008/health|jq
+curl http://172.20.20.213:8008/health|jq
+```
