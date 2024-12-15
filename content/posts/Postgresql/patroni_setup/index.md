@@ -468,6 +468,13 @@ $  cat /etc/modules-load.d/softdog.conf
 softdog
 ```
 
+**REMOVE ENTRY** softdog in all blacklist (in order to start at boot... /lib/modprobe.d/blacklist_...
+
+```sh
+$  grep -i softdog /lib/modprobe.d/*
+/lib/modprobe.d/blacklist_linux_6.8.0-41-generic.conf:blacklist softdog
+```
+
 For testing it may be helpful to disable rebooting by adding `soft_noboot=1`  to the modprobe command line. In this case the watchdog will just log a line in kernel ring buffer, visible via dmesg.
 
 Patroni will log information about the watchdog when it is successfully enabled.
@@ -502,13 +509,6 @@ lsmod | grep softdog
 ls -l /dev/watchdog*
 chown postgres:postgres /dev/watchdog*
 ```
-
-ELIMINAR LA ENTRADA DE softdog de todas las blacklist...
-/lib/modprobe.d/blacklist_...
-$  grep -i softdog /lib/modprobe.d/*
-/lib/modprobe.d/blacklist_linux_6.8.0-41-generic.conf:blacklist softdog
-para que arranque al inicio
-
 
 
 # Application side Configuration:

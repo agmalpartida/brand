@@ -362,3 +362,71 @@ psql -U postgres -h psql03 -p 5432 -c "CREATE ROLE admin WITH LOGIN PASSWORD 'V/
 Password for user postgres:
 CREATE ROLE
 ```
+
+## Create tmp directory to postgresql
+
+```sh
+$ cat /usr/lib/tmpfiles.d/postgresql.conf
+d /var/run/postgresql 0755 postgres postgres -
+```
+
+## Pending Restart
+
+```sh
+$  patronictl -c /etc/patroni/config.yml list
++ Cluster: psqltest_cluster (7422411613954735426) ------+---------+----------+----+-----------+-----------------+------------------------+
+| Member                    | Host                      | Role    | State    | TL | Lag in MB | Pending restart | Pending restart reason |
++---------------------------+---------------------------+---------+----------+----+-----------+-----------------+------------------------+
+| psqltest01.fullstep.cloud | psqltest01.fullstep.cloud | Replica | starting |    |   unknown |                 |                        |
+| psqltest02.fullstep.cloud | psqltest02.fullstep.cloud | Replica | running  |  3 |         0 |                 |                        |
+| psqltest03.fullstep.cloud | psqltest03.fullstep.cloud | Replica | running  |  3 |         0 | *               | max_wal_senders: 10->5 |
++---------------------------+---------------------------+---------+----------+----+-----------+-----------------+------------------------+
+```
+
+1.	Pending Restart
+Description: This column indicates whether the cluster member needs a pending restart to apply certain configuration changes. An asterisk (*) in this column means that the node needs to be restarted for the new configurations to take effect.
+Example: In your output, psqltest03.fullstep.cloud has a * in this column, indicating that this node needs to be restarted.
+
+2.	Pending Restart Reason
+Description: This column provides the specific reason why the node is in a “Pending Restart” state. It refers to configuration changes that require a restart to be applied.
+Example: For psqltest03.fullstep.cloud, the reason is max_wal_senders: 10->5, which means the maximum number of WAL senders has been changed from 10 to 5. For this modification to take effect, the node needs to be restarted.
+
+# Dynamic Configuration
+
+Set the dynamic configuration for the first time: Since the cluster doesn’t have a dynamic configuration yet, you can create it manually. To do this, use the patronictl edit-config command but add the --force option to force the creation of the configuration.
+
+```sh
+patronictl -c /etc/patroni/patroni.yml edit-config --force
+
++++
+@@ -8,6 +8,7 @@
+     max_wal_senders: 5
+     wal_level: replica
+     wal_log_hints: 'on'
++    max_connections: 500
+   use_pg_rewind: true
+   use_slots: true
+ retry_timeout: 10
+
+Apply these changes? [y/N]: y
+Configuration changed
+
+```
+
+Define the parameters in the editor: This should open a text editor where you can add the configuration you want for ttl, loop_wait, and others. Make sure to add the following structure if it’s not present:
+
+```sh
+ttl: 30
+loop_wait: 10
+retry_timeout: 10
+```
+
+Save the changes: After editing the configuration, save the changes and close the editor.
+
+Verify the configuration: Now that you’ve created the configuration, verify that the values have been applied with:
+
+```sh
+patronictl -c /etc/patroni/config.yml show-config
+```
+
+You should see the new dynamic configuration applied.
