@@ -82,3 +82,57 @@ Connect to PgBouncer:
 psql -h <pgBouncer_host> -p 6432 -U <user> pgbouncer
 SHOW POOLS;
 ```
+
+# locks
+
+It seems you're encountering a lock or access issue with your database, where multiple users or processes are trying to access the database "x" simultaneously. This usually occurs when the database is already being used for another query or transaction, causing delays or preventing new queries from running.
+
+Here are a few ways to resolve or troubleshoot this:
+
+- Check Active Queries: Use a command like pg_stat_activity in PostgreSQL to see if there are any long-running or blocking queries:
+
+```sql
+SELECT * FROM pg_stat_activity WHERE datname = '';
+```
+
+This will show you all the active sessions and queries. Look for ones that are holding locks or running for a long time.
+
+- Terminate Blocking Queries: If you find a query that's taking too long or causing the block, you can terminate it (carefully) by identifying the pid of the process and then running:
+
+```sql
+SELECT pg_terminate_backend(<pid>);
+```
+
+- Locks Monitoring: You can also check for specific locks:
+
+```sql
+SELECT pg_terminate_backend(2010);
+```
+
+This will show you locks that are waiting to be granted, which may indicate which query or user is causing the conflict.
+
+- Transaction Management: Ensure that you are managing transactions correctly, especially if multiple users are performing write operations at the same time. Long-running transactions should be avoided if possible.
+
+- Timeouts and Retries: If it's a short-term contention issue, you might simply retry the query after a few moments.
+
+- Drop connections to db:
+```sql
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+ FROM pg_stat_activity
+ WHERE datname = 'db name'
+  AND pid <> pg_backend_pid();
+```
+
+# Temporarily Suspending the Database
+
+You can prevent users from working on a database by disconnecting it:
+
+- Deny:
+```sql
+UPDATE pg_database SET datallowconn = false WHERE datname = 'nombre_db';
+```
+
+- Allow:
+```sql
+UPDATE pg_database SET datallowconn = true WHERE datname = 'nombre_db';
+```
