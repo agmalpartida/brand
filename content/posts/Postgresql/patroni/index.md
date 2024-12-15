@@ -23,6 +23,8 @@ showActions: false
 
 PostgreSQL has been widely adopted as a modern, high-performance transactional database. A highly available PostgreSQL cluster can withstand failures caused by network outages, resource saturation, hardware failures, operating system crashes or unexpected reboots. Such cluster is often a critical component of the enterprise application landscape, where four nines of availability is a minimum requirement. 
 
+Is a template for you to create your own customized, high-availability solution using Python and - for maximum accessibility - a distributed configuration store like ZooKeeper, etcd, Consul or Kubernetes.
+
 Patroni is best candidate to choose for HA and DR setup. Also if you know little bit of Python you can easily read the code and change it according to your needs. Patroni also provides REST APIs to automate things on top of the existing functionalities.
 
 Patroni is open source HA template for PostgreSQL written in Python which can be deployed easily on Kubernetes or VMs. It can be integrated with ETCD, Consul or Zookeeper as consensus store.
@@ -32,10 +34,58 @@ This configuration may be extended to include more replicas, and pgbouncer can b
 
 Patroni is open source library and does not come with enterprise support, you need to depend on open source community for any unforeseen issues or bugs. Although there are managed services available for Patroni.
 
-Solution Architecture:
+- Solution Architecture:
 Here we have used 8 VMs to avoid SPOF and achieve High Availability on Postgres.
 
 ![patroni](./images/patroni-architecture.png) 
+
+Key benefits of Patroni:
+
+- Continuous monitoring and automatic failover
+- Manual/scheduled switchover with a single command
+- Built-in automation for bringing back a failed node to cluster again.
+- REST APIs for entire cluster configuration and further tooling.
+- Provides infrastructure for transparent application failover
+- Distributed consensus for every action and configuration.
+- Integration with Linux watchdog for avoiding split-brain syndrome.
+
+- Architecture layout
+
+The following diagram shows the architecture of a three-node PostgreSQL cluster with a single-leader node.
+
+![](./images/ha-architecture-patroni.png) 
+
+- Components
+
+The components in this architecture are:
+
+- PostgreSQL nodes
+- Patroni - a template for configuring a highly available PostgreSQL cluster.
+- etcd - a Distributed Configuration store that stores the state of the PostgreSQL cluster.
+- HAProxy - the load balancer for the cluster and is the single point of entry to client applications.
+- pgBackRest - the backup and restore solution for PostgreSQL
+- Percona Monitoring and Management (PMM) - the solution to monitor the health of your cluster
+
+- How components work together
+
+Each PostgreSQL instance in the cluster maintains consistency with other members through streaming replication. Each instance hosts Patroni - a cluster manager that monitors the cluster health. Patroni relies on the operational etcd cluster to store the cluster configuration and sensitive data about the cluster health there.
+
+Patroni periodically sends heartbeat requests with the cluster status to etcd. etcd writes this information to disk and sends the response back to Patroni. If the current primary fails to renew its status as leader within the specified timeout, Patroni updates the state change in etcd, which uses this information to elect the new primary and keep the cluster up and running.
+
+The connections to the cluster do not happen directly to the database nodes but are routed via a connection proxy like HAProxy. This proxy determines the active node by querying the Patroni REST API.
+
+```py
+$  pip show patroni
+Name: patroni
+Version: 4.0.1
+Summary: PostgreSQL High-Available orchestrator and CLI
+Home-page: https://github.com/patroni/patroni
+Author: Alexander Kukushkin, Polina Bungina
+Author-email: akukushkin@microsoft.com, polina.bungina@zalando.de
+License: The MIT License
+Location: /usr/lib/python3/dist-packages
+```
+
 
 ## What does Patroni do?
 
