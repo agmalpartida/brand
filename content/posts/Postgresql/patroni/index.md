@@ -202,21 +202,21 @@ Current cluster topology
 + Cluster: psqlcluster01 (7438272857781061312) -+---------+-----------+----+-----------+
 | Member                | Host                  | Role    | State     | TL | Lag in MB |
 +-----------------------+-----------------------+---------+-----------+----+-----------+
-| psql01.fullstep.cloud | psql01.fullstep.cloud | Replica | streaming | 39 |         0 |
-| psql02.fullstep.cloud | psql02.fullstep.cloud | Leader  | running   | 39 |           |
-| psql03.fullstep.cloud | psql03.fullstep.cloud | Replica | streaming | 39 |         0 |
+| psql01.acme.cloud | psql01.acme.cloud | Replica | streaming | 39 |         0 |
+| psql02.acme.cloud | psql02.acme.cloud | Leader  | running   | 39 |           |
+| psql03.acme.cloud | psql03.acme.cloud | Replica | streaming | 39 |         0 |
 +-----------------------+-----------------------+---------+-----------+----+-----------+
-Primary [psql02.fullstep.cloud]:
-Candidate ['psql01.fullstep.cloud', 'psql03.fullstep.cloud'] []: psql01.fullstep.cloud
+Primary [psql02.acme.cloud]:
+Candidate ['psql01.acme.cloud', 'psql03.acme.cloud'] []: psql01.acme.cloud
 When should the switchover take place (e.g. 2024-12-03T15:20 )  [now]:
-Are you sure you want to switchover cluster psqlcluster01, demoting current leader psql02.fullstep.cloud? [y/N]: y
-2024-12-03 14:20:54.93003 Successfully switched over to "psql01.fullstep.cloud"
+Are you sure you want to switchover cluster psqlcluster01, demoting current leader psql02.acme.cloud? [y/N]: y
+2024-12-03 14:20:54.93003 Successfully switched over to "psql01.acme.cloud"
 + Cluster: psqlcluster01 (7438272857781061312) -+---------+----------+----+-----------+
 | Member                | Host                  | Role    | State    | TL | Lag in MB |
 +-----------------------+-----------------------+---------+----------+----+-----------+
-| psql01.fullstep.cloud | psql01.fullstep.cloud | Leader  | running  | 40 |           |
-| psql02.fullstep.cloud | psql02.fullstep.cloud | Replica | stopping |    |   unknown |
-| psql03.fullstep.cloud | psql03.fullstep.cloud | Replica | running  | 39 |         0 |
+| psql01.acme.cloud | psql01.acme.cloud | Leader  | running  | 40 |           |
+| psql02.acme.cloud | psql02.acme.cloud | Replica | stopping |    |   unknown |
+| psql03.acme.cloud | psql03.acme.cloud | Replica | running  | 39 |         0 |
 +-----------------------+-----------------------+---------+----------+----+-----------+
 ```
 
@@ -343,10 +343,110 @@ During recovery or after a system crash, reverting to a previous state may lead 
 If nodes sync with a leader that has a different database state, timeline changes may occur.
 	•	Example: If all nodes now display TL = 3, they are synchronized on the same timeline.
 	
+## Differences in TL (Timeline)
+
+```sh
++ Cluster: psqltest_cluster (7422411613954735426) ------+---------+---------+----+-----------+
+| Member                    | Host                      | Role    | State   | TL | Lag in MB |
++---------------------------+---------------------------+---------+---------+----+-----------+
+| psqltest01.fullstep.cloud | psqltest01.fullstep.cloud | Replica | running |  3 |         0 |
+| psqltest02.fullstep.cloud | psqltest02.fullstep.cloud | Leader  | running |  4 |           |
+| psqltest03.fullstep.cloud | psqltest03.fullstep.cloud | Replica | running |  3 |         0 |
++---------------------------+---------------------------+---------+---------+----+-----------+
+```
+
+In your case, the node psqltest02.fullstep.cloud is the Leader and has a TL of 4, while the nodes psqltest01.fullstep.cloud and psqltest03.fullstep.cloud are Replicas and have a TL of 3. This indicates that the leader has advanced to a new Timeline (4) due to an event such as a failover, while the replicas are still following the previous Timeline (3).
+
+Consequence:
+
+This means that the replicas have not yet been promoted to the new Timeline that the leader has reached. In order for a replica to change its TL to 4, it must receive and apply the WAL records from the leader that correspond to that Timeline.
+
+Changing the Leader and Restarting Replicas to Equalize TL:
+To force the replicas to align their TL with the leader, you can perform a switchover:
+
+```sh
+$ patronictl -c /etc/patroni/config.yml switchover
+```
+
+## Lag in MB
+
+Definition:
+
+Lag indicates the amount of data (in megabytes) that the replicas are behind the leader. If the replicas are receiving and applying WAL (Write Ahead Log) effectively, the lag should be low or zero.
+
+Zero Lag:
+
+In your case, the lag is 0 for the replicas, which means that despite being on an earlier Timeline (3), they have no pending data to process from the leader on the current Timeline (4). This could happen because:
+	•	Temporary Disconnection: The replica might have been disconnected for a while, and although they have no lag, they haven’t had the opportunity to receive the necessary information to move to the new TL.
+	•	No New Changes: If the leader hasn’t made significant changes requiring replication, the lag will remain at 0, even though the nodes have different TLs.
+
+To resolve this situation, the replicas need to receive the corresponding WAL from the leader, which is crucial to fully synchronize and update their TL. Once the replicas receive the necessary WAL, they should be able to change their TL to 4, just like the leader.
+
+Steps to Force Replicas to Receive WAL and Align TL with the Leader:
+
+1. Verify Replication Synchronization
+
+First, it’s important to check that the replicas are in replication mode and that there are no connectivity issues between the leader and the replicas. You can use the following command on the leader to check the replication status:
+
+```sql
+SELECT * FROM pg_stat_replication;
+```
+
+The result showing (0 rows) indicates that there are currently no active replication connections to the leader, suggesting that the replicas are not receiving the WAL, which may be the reason they are not aligned on the Timeline (TL).
+
+2. Force a Checkpoint
+
+Sometimes, performing a checkpoint on the leader can force the generation of new WALs that the replicas will need to apply, helping to equalize the Timeline. Run a manual checkpoint on the leader with this command:
+
+```sql
+SELECT pg_catalog.pg_switch_wal();
+```
+
+This will cause PostgreSQL to generate a new WAL and send it to the replicas, which may trigger the replicas to catch up.
+
+3. Restart the Replicas
+
+If the replicas are not receiving the WAL correctly, they may need to be restarted to reconnect properly with the leader and obtain the required WAL:
+
+```sh
+systemctl restart patroni
+```
+
+This will force the replicas to reconnect to the leader and receive the necessary WAL to equalize the Timeline.
+
+4. Reindex Replicas if the Problem Persists
+
+If the replicas are still not syncing, there might be an issue with replication or previous WAL files. In extreme cases, you can desynchronize and reindex the replicas so they download all WALs from the leader:
+
+```sh
+$ patronictl -c /etc/patroni/patroni.yml reinit psqlcluster01
+```
+
+This will reinitialize the replica and force it to receive a fresh copy of the leader’s current state, ensuring it synchronizes properly.
+
+5. Check WAL Files on Replicas
+
+If the replicas are not receiving the required WAL files, check the replication directories on the replicas to ensure the WAL files are available and there are no replication errors. The relevant directory is usually in the PostgreSQL data directory (pg_wal).
+
+6. Verify Replication Roles and Permissions
+
+Ensure that the replication user has the necessary permissions. You can verify this from the leader by executing:
+
+```sql
+SELECT rolname, rolreplication FROM pg_roles WHERE rolname = 'replicator';
+```
+
+The rolreplication field should be t (true). If not, recreate the replication role with the appropriate permissions.
 
 
 # Troubleshooting
+## Logging
 
+```sh
+journalctl -u patroni.service -f
+```
+
+## Replica nodes
 In Replica nodes, we cannot create anything; it will return an error.
 
 ```sh
@@ -370,26 +470,45 @@ $ cat /usr/lib/tmpfiles.d/postgresql.conf
 d /var/run/postgresql 0755 postgres postgres -
 ```
 
-## Pending Restart
+## Pending Restart - max_wal_senders Configuration
 
 ```sh
 $  patronictl -c /etc/patroni/config.yml list
 + Cluster: psqltest_cluster (7422411613954735426) ------+---------+----------+----+-----------+-----------------+------------------------+
 | Member                    | Host                      | Role    | State    | TL | Lag in MB | Pending restart | Pending restart reason |
 +---------------------------+---------------------------+---------+----------+----+-----------+-----------------+------------------------+
-| psqltest01.fullstep.cloud | psqltest01.fullstep.cloud | Replica | starting |    |   unknown |                 |                        |
-| psqltest02.fullstep.cloud | psqltest02.fullstep.cloud | Replica | running  |  3 |         0 |                 |                        |
-| psqltest03.fullstep.cloud | psqltest03.fullstep.cloud | Replica | running  |  3 |         0 | *               | max_wal_senders: 10->5 |
+| psqltest01.acme.cloud | psqltest01.acme.cloud | Replica | starting |    |   unknown |                 |                        |
+| psqltest02.acme.cloud | psqltest02.acme.cloud | Replica | running  |  3 |         0 |                 |                        |
+| psqltest03.acme.cloud | psqltest03.acme.cloud | Replica | running  |  3 |         0 | *               | max_wal_senders: 10->5 |
 +---------------------------+---------------------------+---------+----------+----+-----------+-----------------+------------------------+
 ```
 
 1.	Pending Restart
 Description: This column indicates whether the cluster member needs a pending restart to apply certain configuration changes. An asterisk (*) in this column means that the node needs to be restarted for the new configurations to take effect.
-Example: In your output, psqltest03.fullstep.cloud has a * in this column, indicating that this node needs to be restarted.
+Example: In your output, psqltest03.acme.cloud has a * in this column, indicating that this node needs to be restarted.
 
 2.	Pending Restart Reason
 Description: This column provides the specific reason why the node is in a “Pending Restart” state. It refers to configuration changes that require a restart to be applied.
-Example: For psqltest03.fullstep.cloud, the reason is max_wal_senders: 10->5, which means the maximum number of WAL senders has been changed from 10 to 5. For this modification to take effect, the node needs to be restarted.
+Example: For psqltest03.acme.cloud, the reason is max_wal_senders: 10->5, which means the maximum number of WAL senders has been changed from 10 to 5. For this modification to take effect, the node needs to be restarted.
+
+The max_wal_senders: 10->5 setting in the context of PostgreSQL and Patroni refers to a change in the max_wal_senders configuration parameter, which controls the maximum number of processes that can send WAL (Write Ahead Log) to replicas in a PostgreSQL cluster.
+
+max_wal_senders: This parameter defines the maximum number of WAL sender processes that can run concurrently on a PostgreSQL server. A WAL sender is a process responsible for sending WAL entries to replicas or standby nodes. This is essential for replication as it allows data to be synchronized between the primary node and the replicas.
+
+The original value was 10, meaning the node could have up to 10 active WAL sender processes simultaneously.
+The new value has been changed to 5, so now only a maximum of 5 WAL sender processes are allowed.
+
+•	Implications:
+	•	Reducing Load: Lowering the maximum number of WAL senders can be useful if you want to reduce the load on the primary server, especially if there aren’t many replicas connected or if the server is experiencing high load.
+	•	Limiting Replicas: If the cluster is designed to have fewer replicas, or if maintenance is planned, adjusting this value may be necessary to prevent unnecessary connections.
+
+## The “streaming” state on a replica node in a PostgreSQL cluster 
+
+Indicates that the node is receiving data from the primary or leader node via real-time replication. However, the fact that this state has persisted for 12 hours could be due to several factors:
+	•	Replica without activity: If the primary node (psqltest01) has not generated a significant amount of changes in the database, the replica may remain in “streaming” without much work to do. This is normal if there is not a high workload or if the database is idle.
+	•	Streaming connection timeout: The replication connection between the primary node and the replica may have become “stuck.” While the replica shows that it is in “streaming,” the connection could be inactive due to network issues or a timeout.
+	•	Replication process issues: There could be a problem in the replication process, such as a network connection interruption that keeps the node in the “streaming” state but without receiving new data. This can happen if there is some kind of blockage in the transfer of WAL (Write-Ahead Logging).
+	•	Cluster or monitoring process issue: There might be an issue with the monitoring tool or the process generating the cluster status report. This could give the impression that the node is stuck when it actually is not.
 
 # Dynamic Configuration
 
