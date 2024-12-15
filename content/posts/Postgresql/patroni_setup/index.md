@@ -236,6 +236,47 @@ psql -h 10.201.217.181 -U postgres -d postgres -c "\du"
 This should display a list of users, including admin and replicator, that Patroni created during the initialization process.
 
 4.1. Bootstrap Section
+The bootstrap section in Patroni is used to define how the PostgreSQL cluster is initialized and to set up the initial configuration, including user creation.
+
+Creating a post_bootstrap Script
+
+To automate additional tasks after the bootstrap process, you can create a post_bootstrap script. This script will run automatically after the initial cluster setup and can be used to create necessary users, set permissions, or perform other configurations.
+
+Example post_bootstrap Script
+
+Create a script, for example, named post_bootstrap.sh:
+
+```sh
+#!/bin/bash
+
+set -e
+
+# connexion variables
+PGUSER="postgres"
+PGPASSWORD="postgres"
+PGHOST="localhost"
+PGPORT="5432"
+
+# create user admin
+psql -U $PGUSER -h $PGHOST -p $PGPORT -c "CREATE ROLE admin WITH LOGIN PASSWORD 'V/\$QjLxf2022.-' CREATEDB CREATEROLE;"
+
+# create user replicator
+psql -U $PGUSER -h $PGHOST -p $PGPORT -c "CREATE ROLE replicator WITH LOGIN PASSWORD 'fxN^vruL2022.-' REPLICATION;"
+
+echo "Users created successfully."
+
+```
+
+Modify your Patroni configuration:
+
+```sh
+bootstrap:
+  ...
+  post_bootstrap: /etc/patroni/post_bootstrap.sh 
+```
+
+
+Or directly over patroni configuration file:
 
 ```yaml
 users:  
@@ -420,9 +461,28 @@ To enable software watchdog issue the following commands as root before starting
 chown postgres /dev/watchdog
 ```
 
+Load at boot:
+
+```sh
+$  cat /etc/modules-load.d/softdog.conf
+softdog
+```
+
 For testing it may be helpful to disable rebooting by adding `soft_noboot=1`  to the modprobe command line. In this case the watchdog will just log a line in kernel ring buffer, visible via dmesg.
 
 Patroni will log information about the watchdog when it is successfully enabled.
+
+```sh
+root@psqltest01
+ ~  $  journalctl -b | grep softdog
+Oct 05 20:00:42 psqltest01 systemd-modules-load[360]: Module 'softdog' is deny-listed (by kmod)
+Oct 05 20:01:41 psqltest01 kernel: softdog: initialized. soft_noboot=0 soft_margin=60 sec soft_panic=0 (nowayout=0)
+Oct 05 20:01:41 psqltest01 kernel: softdog:              soft_reboot_cmd=<not set> soft_active_on_boot=0
+ root@psqltest01
+ ~  $  dmesg | grep softdog
+[   63.286320] softdog: initialized. soft_noboot=0 soft_margin=60 sec soft_panic=0 (nowayout=0)
+[   63.286327] softdog:              soft_reboot_cmd=<not set> soft_active_on_boot=0
+```
 
 ```sh
 modprobe softdog
@@ -442,6 +502,14 @@ lsmod | grep softdog
 ls -l /dev/watchdog*
 chown postgres:postgres /dev/watchdog*
 ```
+
+ELIMINAR LA ENTRADA DE softdog de todas las blacklist...
+/lib/modprobe.d/blacklist_...
+$  grep -i softdog /lib/modprobe.d/*
+/lib/modprobe.d/blacklist_linux_6.8.0-41-generic.conf:blacklist softdog
+para que arranque al inicio
+
+
 
 # Application side Configuration:
 

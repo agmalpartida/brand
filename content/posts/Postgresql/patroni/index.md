@@ -343,3 +343,22 @@ During recovery or after a system crash, reverting to a previous state may lead 
 If nodes sync with a leader that has a different database state, timeline changes may occur.
 	•	Example: If all nodes now display TL = 3, they are synchronized on the same timeline.
 	
+
+
+# Troubleshooting
+
+In Replica nodes, we cannot create anything; it will return an error.
+
+```sh
+$  psql -U postgres -h psql01 -p 5432 -c "CREATE ROLE admin WITH LOGIN PASSWORD 'V/\$QjLxf2022.-' CREATEDB CREATEROLE;"
+Password for user postgres:
+ERROR:  cannot execute CREATE ROLE in a read-only transaction
+```
+
+If we do it on the Leader:
+
+```sh
+psql -U postgres -h psql03 -p 5432 -c "CREATE ROLE admin WITH LOGIN PASSWORD 'V/\$QjLxf2022.-' CREATEDB CREATEROLE;"
+Password for user postgres:
+CREATE ROLE
+```
