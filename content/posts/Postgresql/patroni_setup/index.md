@@ -538,6 +538,127 @@ Oct 05 20:01:41 psqltest01 kernel: softdog:              soft_reboot_cmd=<not se
 [   63.286327] softdog:              soft_reboot_cmd=<not set> soft_active_on_boot=0
 ```
 
+# Pgbouncer
+
+PgBouncer can be configured to work with a Patroni cluster, and in fact, it is a common practice for managing connections to the PostgreSQL cluster. PgBouncer acts as a proxy and connection pooler that distributes client requests to the nodes of the cluster according to the configuration and logic of Patroni (i.e., to the leader or followers).
+
+Configuring PgBouncer in a Patroni Cluster:
+
+1. Install PgBouncer on each node in the cluster
+On each node where Patroni manages a PostgreSQL instance, install PgBouncer.
+
+```sh
+apt install pgbouncer
+
+systemctl enable pgbouncer
+systemctl status pgbouncer
+```
+
+2. Configure pgbouncer.ini
+On each node, edit the PgBouncer configuration file (/etc/pgbouncer/pgbouncer.ini or equivalent).
+A typical configuration example for a Patroni cluster:
+
+```ini
+[databases]
+# Redirige todas las conexiones al líder del clúster de Patroni
+mydb = host=127.0.0.1 port=5432 dbname=mydb auth_user=pgbouncer_user
+
+[pgbouncer]
+listen_addr = 0.0.0.0        # Escucha en todas las interfaces
+listen_port = 6432           # Puerto para PgBouncer
+auth_type = md5              # Método de autenticación
+auth_file = /etc/pgbouncer/userlist.txt  # Archivo de usuarios
+pool_mode = transaction      # Usa el modo "transaction" para Patroni
+max_client_conn = 500        # Máximo de conexiones cliente
+default_pool_size = 20       # Tamaño del pool por base de datos
+```
+
+```ini
+[databases]
+powerbi = host=127.0.0.1 dbname=powerbi
+prd_end_bi = host=127.0.0.1 dbname=prd_end_bi
+
+[pgbouncer]
+listen_addr = 0.0.0.0
+listen_port = 6432
+auth_file = /etc/pgbouncer/userlist.txt
+pool_mode = transaction
+max_client_conn = 500
+default_pool_size = 20
+admin_users = postgres
+```
+
+In this configuration:
+	•	auth_user should be configured with a user that has access to the databases.
+	•	Use transaction mode (pool_mode = transaction) to prevent connections from getting “stuck” during failovers or leader changes.
+
+3. Create the userlist.txt file
+
+Define the users that PgBouncer will use to authenticate with PostgreSQL. For example, in /etc/pgbouncer/userlist.txt:
+
+- Example:
+
+```sh
+$  cat /etc/pgbouncer/userlist.txt
+"postgres" "changeme"
+"powerbi" "123456"
+```
+
+Relationship between users and databases:
+	•	When a client connects to PgBouncer requesting a specific database, PgBouncer verifies the provided user credentials against userlist.txt.
+	•	If the credentials are correct, PgBouncer opens a connection to the PostgreSQL server using the username provided by the client.
+
+4. Configure Patroni to work with PgBouncer
+
+Patroni needs to “inform” the load balancer (in this case, PgBouncer) about changes in node status. This is done through membership tags and custom scripts.
+	•	Adjust the Patroni configuration in patroni.yml:
+
+```sh
+tags:
+  nofailover: false
+  noloadbalance: true  # Prevent redirecting traffic to followers if using PgBouncer only for the leader
+```
+
+	•	Optional: Use health scripts to monitor which node should receive traffic:
+	•	Set up a script in PgBouncer or a health check to redirect traffic to the leader.
+	•	You can query the Patroni REST endpoint (http://:8008/) to check which node is the leader.
+
+5. Configure clients to connect to PgBouncer
+
+Instead of connecting directly to PostgreSQL, configure your applications to point to PgBouncer. For example:
+	•	Host: <IP or DNS of PgBouncer>
+	•	Port: 6432
+	•	Database: mydb
+
+6. Load balancing between followers (Optional)
+
+If you want to allow read-only connections to the followers of the cluster, you can configure multiple entries in pgbouncer.ini:
+
+```ini
+[databases]
+mydb_rw = host=127.0.0.1 port=5432 dbname=mydb
+mydb_ro = host=<follower_ip> port=5432 dbname=mydb
+```
+
+7. Restart PgBouncer
+
+```sh
+systemctl restart pgbouncer
+```
+
+Failover Scripts: To ensure a quick redirection after a failover in Patroni, it’s useful to integrate scripts that automatically update PgBouncer’s configuration.
+
+PgBouncer on a dedicated node: In large implementations, it’s common to use a dedicated node for PgBouncer rather than installing it on the cluster nodes.
+
+## STATISTICS
+
+PgBouncer’s virtual tables are not accessible through traditional SQL queries like you would in a PostgreSQL database. Instead, PgBouncer uses specific SHOW commands to gather information.
+	•	SHOW POOLS;: Information about the connection pools.
+	•	SHOW STATS;: General statistics about connections and pools.
+	•	SHOW CLIENTS;: Information about client connections.
+	•	SHOW USERS;: Users connected to PgBouncer.
+	•	SHOW CONFIG;: Current configuration parameters of PgBouncer.
+
 # Application side Configuration:
 
 As we have two HAProxy servers application should be configured in such a way that it should point to both servers, submit the request to available server and if application does not support such case then you need to set up virtual IP which will point to available HAProxy server.
