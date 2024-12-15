@@ -16,6 +16,34 @@ showMeta: false
 showActions: false
 ---
 
+# Adjusting Operating System Resources
+
+- Increase the Limit of Open Files
+
+Each PostgreSQL connection consumes a file descriptor. Adjust the limits in /etc/security/limits.conf:
+
+```
+postgres  soft  nofile  10240  
+postgres  hard  nofile  10240  
+```
+
+- Modify Kernel Parameters
+
+Increase the maximum number of network connections and system semaphores in /etc/sysctl.conf:
+
+```
+fs.file-max = 100000  
+kernel.sem = 250 32000 100 128  
+net.core.somaxconn = 1024  
+net.ipv4.ip_local_port_range = 1024 65000  
+```
+
+- Apply the Changes
+
+```bash
+sysctl -p  
+```
+
 # ETCD Installation and Configuration
 
 `wget https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz` 

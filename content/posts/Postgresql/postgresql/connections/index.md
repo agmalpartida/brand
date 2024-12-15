@@ -16,7 +16,18 @@ showActions: false
 
 # Overview
 
+[Reference](https://www.postgresql.org/docs/current/runtime-config-client.html) 
+
 While PostgreSQL's pg_hba.conf is the file responsible for restricting connections, when listen_addresses is set to * (wildcard), it is possible to discover the open port on 5432 using nmap and learn the database exists, thereby possibly opening the server up for an exploit. Setting it to the an IP address prevents PostgreSQL from listening on an unintended interface, preventing this potential exploit. 
+
+# Monitoring and Continuous Optimization
+
+Use tools like pg_stat_activity and pg_stat_database to monitor connection usage and adjust the values as needed:
+
+```sql
+SELECT * FROM pg_stat_activity;
+SELECT datname, numbackends FROM pg_stat_database;
+```
 
 # active connections
 
