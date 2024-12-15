@@ -450,9 +450,53 @@ Now try connecting to the cluster using haproxy host, it should get redirected t
 
 # Setting up software watchdog on Linux
 
+Watchdog devices are software or hardware mechanisms that will reset the whole system when they do not get a keepalive heartbeat within a specified timeframe. This adds an additional layer of fail safe in case usual Patroni split-brain protection mechanisms fail.
+
+While the use of a watchdog mechanism with Patroni is optional, you shouldn’t really consider deploying a PostgreSQL HA environment in production without it.
+
+Patroni will be the component interacting with the watchdog device. Since Patroni is run by the postgres user, we need to either set the permissions of the watchdog device open enough so the postgres user can write to it or make the device owned by postgres itself, which we consider a safer approach (as it is more restrictive).
+
 Default Patroni configuration will try to use /dev/watchdog on Linux if it is accessible to Patroni. For most use cases using software watchdog built into the Linux kernel is secure enough.
 
-To enable software watchdog issue the following commands as root before starting Patroni:
+- Installation
+
+```sh
+apt install watchdog
+```
+
+- Create service
+
+```
+vi /etc/systemd/system/patroni_watchdog.service
+
+[Unit]
+Description=Makes kernel watchdog device available for Patroni
+Before=patroni.service
+
+[Service]
+Type=oneshot
+
+Environment=WATCHDOG_MODULE=softdog
+Environment=WATCHDOG_DEVICE=/dev/watchdog
+Environment=PATRONI_USER=postgres
+
+ExecStart=/usr/sbin/modprobe ${WATCHDOG_MODULE}
+ExecStart=/bin/chown ${PATRONI_USER} ${WATCHDOG_DEVICE}
+
+[Install]
+WantedBy=multi-user.target
+```
+
+- Apply
+
+```sh
+systemctl daemon-reload
+systemctl enable patroni_watchdog.service
+systemctl start patroni_watchdog.service
+systemctl status patroni_watchdog.service
+```
+
+To enable software watchdog manually issue the following commands as root before starting Patroni:
 
 `modprobe softdog` 
 
@@ -471,6 +515,9 @@ softdog
 **REMOVE ENTRY** softdog in all blacklist (in order to start at boot... /lib/modprobe.d/blacklist_...
 
 ```sh
+$ grep blacklist /lib/modprobe.d/* /etc/modprobe.d/* |grep softdog
+/lib/modprobe.d/blacklist_linux_5.4.0-72-generic.conf:blacklist softdog
+
 $  grep -i softdog /lib/modprobe.d/*
 /lib/modprobe.d/blacklist_linux_6.8.0-41-generic.conf:blacklist softdog
 ```
@@ -490,26 +537,6 @@ Oct 05 20:01:41 psqltest01 kernel: softdog:              soft_reboot_cmd=<not se
 [   63.286320] softdog: initialized. soft_noboot=0 soft_margin=60 sec soft_panic=0 (nowayout=0)
 [   63.286327] softdog:              soft_reboot_cmd=<not set> soft_active_on_boot=0
 ```
-
-```sh
-modprobe softdog
-lsmod|grep softdog
-
-$  ls -l /dev/watchdog
-crw-rw---- 1 postgres postgres 10, 130 Aug 15 19:08 /dev/watchdog
-
-systemctl stop postgresql
-sh -c 'echo "softdog" >> /etc/modules'
-sh -c 'echo "KERNEL==\"watchdog\", OWNER=\"postgres\", GROUP=\"postgres\"" >> /etc/udev/rules.d/61-watchdog.rules'
-vi /lib/modprobe.d/blacklist_linux_5.4.0-73-generic.conf
-grep blacklist /lib/modprobe.d/* /etc/modprobe.d/* |grep softdog
-vi /lib/modprobe.d/blacklist_linux_5.15.0-53-generic.conf
-modprobe softdog
-lsmod | grep softdog
-ls -l /dev/watchdog*
-chown postgres:postgres /dev/watchdog*
-```
-
 
 # Application side Configuration:
 

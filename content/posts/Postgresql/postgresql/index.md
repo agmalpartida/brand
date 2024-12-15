@@ -13,6 +13,13 @@ showMeta: false
 showActions: false
 ---
 
+# Configuration
+
+```sql
+SHOW log_directory;
+SHOW log_filename;
+```
+
 # tables
 
 ## list tables
