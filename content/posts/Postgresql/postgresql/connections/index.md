@@ -164,11 +164,13 @@ ALTER ROLE username NOLOGIN;
 ```
 
 # Transaction timeouts
-Value of 0 (zero): Disables this limit, allowing queries to run indefinitely.
 
-- This value is in milliseconds and allows more time to complete the operations.
+- This value is in milliseconds and allows more time to complete the operations. For specific queries that may take longer, override this value at the session level:
 ```sql
 SET statement_timeout = 6000;
+```
+at the global level:
+```sql
 ALTER SYSTEM SET statement_timeout = '10min';
 ```
 
@@ -191,4 +193,29 @@ BEGIN
 postgres=*# select pg_sleep(6);
 ```
 
+- Value of 0 (zero): Disables this limit, allowing queries to run indefinitely.
 
+Disadvantages:
+  - Risk of zombie transactions:
+    A transaction that doesn’t close properly could remain blocking resources indefinitely, consuming connections and locking tables.
+	- Degraded performance:
+    Long-running queries or transactions open for too long can slow down the database, especially in busy systems.
+	- Increased susceptibility to deadlocks:
+    If transactions stay open without limits, the risk of mutual blocking increases.
+	-	Difficult troubleshooting:
+    Without limits, problematic or poorly optimized queries may go unnoticed, making it harder to identify bottlenecks.
+
+# Troubleshooting
+
+Use ALTER ROLE or ALTER DATABASE to customize limits by user or database:
+
+```sql
+ALTER ROLE user1 SET statement_timeout = '6000';  
+ALTER ROLE user1 SET idle_in_transaction_session_timeout = '6000';  
+```
+
+Consider implementing tools like pg_stat_activity or scripts to identify long-running or blocked connections:
+
+```sql
+SELECT * FROM pg_stat_activity WHERE state = 'idle in transaction';
+```
