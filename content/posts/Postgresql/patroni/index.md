@@ -304,3 +304,42 @@ curl http://172.20.20.211:8008/health|jq
 curl http://172.20.20.212:8008/health|jq
 curl http://172.20.20.213:8008/health|jq
 ```
+
+# Cluster Node Status Overview
+
+- Role:
+	•	Description: This column indicates the node’s role within the cluster. Typical roles include:
+	•	Leader: The leader node handles writes and coordinates with replicas.
+	•	Replica: Nodes that replicate data from the leader.
+
+- State:
+	•	Description: Displays the current state of each node. Common states include:
+	•	running: The node is operational and available.
+	•	streaming: The node is receiving real-time data from the leader.
+
+- TL (Timeline):
+	•	Description: Indicates the current timeline of the node, crucial for data recovery and replication. In PostgreSQL, a new timeline is created when data divergence occurs. All nodes in the cluster must share the same timeline for replication to work.
+	•	Example: If all nodes have a TL of 2, they are synchronized on the same timeline.
+
+- Lag in MB:
+	•	Description: Shows the amount of lag in megabytes that a replica has compared to the leader. A value of 0 means the replica is fully up-to-date.
+	•	Example: If both replicas show 0 MB lag, they are receiving real-time data and are synchronized with the leader.
+
+# Time-Line. Common Scenarios Involving Timelines
+
+1.	Timeline Change Due to Failover or Bootstrap:
+After a failover or cluster restart where a new leader is designated, a new timeline may be created. The new leader initiates this new timeline.
+	
+2.	Cluster Reinitialization:
+If you initialize a new cluster using a bootstrap command after configuration changes, the process may create a new timeline, especially if the previous cluster state was deleted.
+
+3.	Hot Standby and Replication Rules:
+When a node is configured as a standby (replica), it synchronizes its timeline with the leader upon connection. If the leader changes timelines, the replicas adopt the new timeline.
+
+4.	Database Snapshot:
+During recovery or after a system crash, reverting to a previous state may lead to a timeline change.
+
+5.	Diverging Timelines in Replicas:
+If nodes sync with a leader that has a different database state, timeline changes may occur.
+	•	Example: If all nodes now display TL = 3, they are synchronized on the same timeline.
+	

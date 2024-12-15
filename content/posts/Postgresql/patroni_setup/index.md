@@ -265,6 +265,19 @@ authentication:
     password: postgres  
 ```
 
+•	replication: This defines how the replicator user authenticates for replication. The password must match the one defined in the bootstrap section to ensure successful replication connections.
+
+
+## Password Storage
+
+The credentials are stored at runtime in the pgpass file specified in the Patroni configuration. This ensures the replication user’s authentication details are available for automatic processes.
+
+```sh
+root@psql01
+ ~  $  cat /tmp/pgpass0
+psql02.fullstep.cloud:5432:*:replicator:fxN^vruL2022.-
+```
+
 5. Start Patroni
 
 `service patroni start` 
