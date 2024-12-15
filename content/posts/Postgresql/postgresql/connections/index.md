@@ -35,15 +35,18 @@ Check the configured maximum limit:
 SHOW max_connections;
 ```
 
-If you are setting shared_buffers to 2GB, ensure that max_connections is adjusted accordingly. You can use this formula as a reference:
--	Total RAM * 0.25 = shared_buffers
--	Remaining RAM = work_mem, processes, etc.
-
 max_connections: Assess the maximum number of connections you actually need. Too many active connections can impact performance. Use a higher value, but combine this with a connection pooler like PgBouncer if you need thousands of connections.
 
 ```sql
 ALTER SYSTEM SET max_connections = '500';
 ```
+
+# shared_buffers
+
+The shared_buffers parameter defines how much RAM is reserved for PostgreSQL operations. Increasing it can improve performance, especially if you increase connections.
+If you are setting shared_buffers to 2GB, ensure that max_connections is adjusted accordingly. You can use this formula as a reference:
+-	Total RAM * 0.25 = shared_buffers
+-	Remaining RAM = work_mem, processes, etc.
 
 # Handle many clients
 
@@ -135,4 +138,16 @@ UPDATE pg_database SET datallowconn = false WHERE datname = 'nombre_db';
 - Allow:
 ```sql
 UPDATE pg_database SET datallowconn = true WHERE datname = 'nombre_db';
+```
+
+# Revoke privileges
+
+```sql
+REVOKE CONNECT ON DATABASE db_name FROM PUBLIC;
+```
+
+- Temporarily deny to user:
+
+```sql
+ALTER ROLE username NOLOGIN;
 ```

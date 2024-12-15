@@ -537,6 +537,7 @@ Oct 05 20:01:41 psqltest01 kernel: softdog:              soft_reboot_cmd=<not se
 
 # Pgbouncer
 
+It is useful to use a connection pool to handle large numbers of users without overwhelming PostgreSQL.
 PgBouncer can be configured to work with a Patroni cluster, and in fact, it is a common practice for managing connections to the PostgreSQL cluster. PgBouncer acts as a proxy and connection pooler that distributes client requests to the nodes of the cluster according to the configuration and logic of Patroni (i.e., to the leader or followers).
 
 Configuring PgBouncer in a Patroni Cluster:
