@@ -2,7 +2,7 @@
 Title: Postgresql HA with Patroni
 date: 2024-09-01
 categories:
-- Postgresql
+- Patroni
 tags:
 - postgresql
 - ha
