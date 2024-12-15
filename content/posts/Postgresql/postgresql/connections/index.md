@@ -162,3 +162,33 @@ REVOKE CONNECT ON DATABASE db_name FROM PUBLIC;
 ```sql
 ALTER ROLE username NOLOGIN;
 ```
+
+# Transaction timeouts
+Value of 0 (zero): Disables this limit, allowing queries to run indefinitely.
+
+- This value is in milliseconds and allows more time to complete the operations.
+```sql
+SET statement_timeout = 6000;
+ALTER SYSTEM SET statement_timeout = '10min';
+```
+
+- It controls how long a transaction can remain open without activity before the server automatically closes it.
+```sql
+SHOW ALL
+ALTER SYSTEM SET idle_in_transaction_session_timeout = '6000';
+```
+
+- Testing
+```
+postgres=# set idle_in_transaction_session_timeout = '10s';
+SET
+postgres=# set statement_timeout = '10s';
+SET
+postgres=# set transaction_timeout = '5s';
+SET
+postgres=# begin;
+BEGIN
+postgres=*# select pg_sleep(6);
+```
+
+
