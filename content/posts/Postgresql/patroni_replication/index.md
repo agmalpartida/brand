@@ -115,3 +115,128 @@ archive_command = 'cp %p /var/lib/postgresql/9.6/main/archive/%f'
 ```
 
 A hot_standby replica server is basically ALWAYS running in recovery; means that the "archive_command" will never run on it. Lesson 1 learned: Cleaning up must be done on the master server. 
+
+# Monitoring Recovery Status
+
+If a replica is in recovery mode and the cluster is properly configured, Patroni should handle it. Check that the replica is receiving data from the primary:
+
+```sql
+SELECT application_name, state, sync_state, sent_lsn, write_lsn, flush_lsn, replay_lsn
+FROM pg_stat_replication;
+```
+
+	•	state should be streaming.
+	•	If there is a large discrepancy between sent_lsn and replay_lsn, it indicates that the replica is lagging behind.
+	•	If you are using pgBackRest, ensure that the WAL files are available for the replicas:
+List the archived files:
+
+```sh
+pgbackrest --stanza=psqlcluster01-backup info
+```
+
+Ensure that the WAL files are present in the configured destination.
+
+	•	Validating the Replication User
+Replication Permissions: The user must have the REPLICATION privilege. Run this command to confirm:
+
+```sh
+\du replicator
+```
+
+Replication from the Primary: On the primary, ensure that the replicator user is connected and using a replication slot (if replicas are configured this way). Run this on the primary:
+
+```sql
+SELECT * FROM pg_stat_replication;
+```
+
+Important fields:
+	•	application_name: The name of the replica.
+	•	state: Should be streaming.
+	•	client_addr: The IP of the replica node.
+Replica Status: Run on the replicas:
+
+```sql
+SELECT pg_is_in_recovery();
+```
+
+•	true: It is in recovery, as expected for a replica.
+•	false: It is not functioning as a replica; check Patroni configuration.
+
+Verify the Table Structure
+
+Identify the table involved in the query (likely specified before the error) and confirm its structure using:
+
+```
+\d+ table_name
+```
+
+Check Replication User from Another Node
+
+To check if the replication user works, run this on another node:
+
+```sh
+$ psql -h 172.20.20.211 -U replicator -W -d postgres -c "SELECT 1;"
+Password:
+ ?column?
+ ----------
+        1
+(1 row)
+```
+
+Rebuild a Replica if Necessary
+
+If a replica cannot sync:
+
+```sh
+systemctl stop patroni
+rm -rf /var/lib/postgresql/17/main
+systemctl start patroni
+```
+
+Validate Replication on the Primary
+
+Run this on the primary (172.20.20.211):
+
+```sql
+SELECT * FROM pg_stat_replication;
+```
+
+Expected results:
+	•	One row per connected replica.
+	•	Important columns:
+	•	state: Should be streaming.
+	•	client_addr: The IP of the replicas.
+	•	sync_state: May be sync or async, depending on your configuration.
+
+# RECOVERY
+
+The recovery mode can last for some time, depending on the size of the database and pending WAL files. If the database is not corrupted, PostgreSQL should automatically exit this mode when recovery is complete.
+
+Use this command to monitor the recovery process activity:
+
+```sh
+psql -U postgres -c "SELECT pg_is_in_recovery();"
+```
+
+	•	Output true: It is still in recovery.
+	•	Output false: The system is operational.
+
+Verify the Integrity of the WAL Files
+
+If the WAL files are corrupted or missing, PostgreSQL may get stuck in recovery. Use the following command to check the status of the WAL files:
+
+```sh
+pg_waldump -p /var/lib/pgsql/<version>/data/pg_wal/
+```
+
+	•	Replication Slots (Optional): If using replication slots to avoid WAL loss, check on the primary:
+
+```sql
+SELECT * FROM pg_replication_slots;
+```
+
+	•	slot_name: There should be a slot for each replica.
+	•	active: Should be true for slots in use.
+
+If you are not using slots, ensure that the wal_keep_size parameter is sufficient to cover periods when replicas might be inactive.
+
