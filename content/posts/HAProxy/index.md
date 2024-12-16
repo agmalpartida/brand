@@ -36,4 +36,55 @@ listen postgres
 Option httpchk GET /master: Performs a GET request to the /master endpoint. This checks if the node is the leader. If the node responds with the correct status ({"state":"running"}), HAProxy will consider it "up."
 The http-check expect string {"state":"running"}: Verifies that the response contains "state":"running", indicating that the node is in good health (leader or replica).
 
+# SSL
+
+To forward the SSL connection directly to PostgreSQL without terminating it at HAProxy:
+
+```
+frontend https_front
+    bind *:443
+    mode tcp
+    option tcplog
+    default_backend pg_back
+
+backend pg_back
+    mode tcp
+    server pg_server 172.20.20.10:5432 check
+```
+
+# Timeouts
+
+- timeout client 30m     # Max wait time for client activity
+- timeout server 30m     # Max wait time for server activity
+- timeout connect 5s     # Max time to establish a connection
+- timeout check 5s       # Max wait time for health checks
+- timeout tunnel 1h      # Max time for persistent connections (e.g., WebSockets)
+- timeout client-fin <time> and timeout server-fin <time> # Maximum time to wait for the connection to close after one side sends a FIN signal.
+- timeout http-request <time>  # Maximum time allowed for an HTTP request to be completed.
+- timeout queue <time> # Maximum time a request can wait in the queue before being processed by a backend server.
+
+# Troubleshooting
+
+## Check backend metrics via terminal.
+
+- Enable the HAProxy socket:
+
+```
+global
+  stats socket /var/run/haproxy.sock mode 600 level admin
+```
+
+- Command to view server state:
+
+```bash
+$ echo "show servers state" | sudo socat stdio /var/run/haproxy.sock
+```
+
+## SSL Certificate Validation Issues
+
+If encountering SSL certificate verify result: self-signed certificate, ensure the certificate chain is valid:
+
+```
+$ openssl verify -CAfile /etc/ssl/certs/ca-certificates.crt /etc/haproxy/ssl/your_certificate.pem
+```
 
