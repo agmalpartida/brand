@@ -58,4 +58,8 @@ log_disconnections = off
 
 # By user
 
+PostgreSQL allows you to apply configurations for specific users/roles. If a user connects to the desired database, you can enable logging only for that user.
 
+```sql
+ALTER ROLE my_user SET log_statement = 'all';
+```
