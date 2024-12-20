@@ -30,6 +30,26 @@ WHERE pg_stat_activity.datname = 'db_name'
   AND pid <> pg_backend_pid();
 ```
 
+# Change Password
+
+```sql
+ALTER USER user_name WITH PASSWORD '';
+```
+
+# Create users
+Verify schema-level permissions. If the user has trouble accessing the table due to schema restrictions, you also need to grant permissions on the schema.
+Allow schema access:
+
+```sql
+GRANT USAGE ON SCHEMA public TO user_name;
+```
+
+Allow object creation in the schema
+
+```sql
+GRANT CREATE ON SCHEMA public TO user_name;
+```
+
 # Change the ownership of their objects
 
 ```sql
@@ -43,8 +63,21 @@ DROP TABLE table_name;
 DROP DATABASE db_name;
 ```
 
-# Revoke permissions:
+# Revoke permissions
+
+Before deleting a user, it is good practice to revoke their permissions on all databases and schemas.
 
 ```sql
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM user_name;
+REVOKE ALL PRIVILEGES ON DATABASE db_name FROM user_name;
+
+DROP ROLE user_name;
 ```
+
+PostgreSQL does not allow deleting a user if they own tables, databases, sequences, etc. You must transfer or delete these objects first.
+
+```sql
+SELECT tablename FROM pg_tables WHERE tableowner = 'user_name';
+SELECT datname FROM pg_database WHERE datdba = (SELECT oid FROM pg_roles WHERE rolname = 'user_name');
+```
+
