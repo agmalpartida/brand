@@ -1,84 +1,50 @@
 ---
-Title: Postgresql operations
-date: 2024-09-01
+Title: Postgresql Users
+date: 2024-12-20
 categories:
 - Postgresql
 tags:
 - postgresql
 keywords:
 - postgresql
-summary: "Quick commands to common operations"
+summary: ""
 comments: false
 showMeta: false
 showActions: false
 ---
 
-# Configuration
+# Active connections
 
 ```sql
-SHOW log_directory;
-SHOW log_filename;
+SELECT pid, usename, datname, application_name FROM pg_stat_activity WHERE usename = 'user_name';
 ```
 
-# tables
-
-## list tables
-
-```sh
-\dt: list all tables in the current database using your search_path
-\dt *.: list all tables in the current database regardless your search_path
-```
-- This lists tables in the current database
+# Force user logout
 
 ```sql
-SELECT table_schema,table_name
-FROM information_schema.tables
-ORDER BY table_schema,table_name;
+REVOKE CONNECT ON DATABASE db_name FROM PUBLIC;
+
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+FROM pg_stat_activity
+WHERE pg_stat_activity.datname = 'db_name'
+  AND pid <> pg_backend_pid();
 ```
 
-
-# databases
-
-## list databases
-- psql tool
-
-`\l: list all databases` 
-
-- sql query
+# Change the ownership of their objects
 
 ```sql
-SELECT datname FROM pg_database
-WHERE datistemplate = false;
+ALTER TABLE table_name OWNER TO user ;
 ```
 
-## To switch databases:
-
-```sh
-\connect database_name or \c database_name
-```
-
-# users
-
-## Listing users
-
-`\du+` 
-
-- The following statement returns all users in the current database server by querying data from the pg_catalog.pg_user catalog:
+If you can’t transfer ownership, delete the objects first:
 
 ```sql
-SELECT usename AS role_name,
-  CASE 
-     WHEN usesuper AND usecreatedb THEN 
-	   CAST('superuser, create database' AS pg_catalog.text)
-     WHEN usesuper THEN 
-	    CAST('superuser' AS pg_catalog.text)
-     WHEN usecreatedb THEN 
-	    CAST('create database' AS pg_catalog.text)
-     ELSE 
-	    CAST('' AS pg_catalog.text)
-  END role_attributes
-FROM pg_catalog.pg_user
-ORDER BY role_name desc;
+DROP TABLE table_name;
+DROP DATABASE db_name;
 ```
 
+# Revoke permissions:
 
+```sql
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM user_name;
+```
