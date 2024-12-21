@@ -206,7 +206,6 @@ If you want to force the password to expire so the user must change it on the ne
 ALTER ROLE rol_name PASSWORD 'new_passwd' VALID UNTIL '2024-12-31';
 ```
 
-
 # Transaction timeouts
 
 - This value is in milliseconds and allows more time to complete the operations. For specific queries that may take longer, override this value at the session level:
