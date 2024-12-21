@@ -78,6 +78,14 @@ DROP OWNED BY rol1;
 DROP ROLE rol1;
 ```
 
+- If the role has active sessions, you will not be able to delete it until those sessions are closed. To force the termination of the connections:
+
+```sql
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+FROM pg_stat_activity
+WHERE pg_stat_activity.usename = 'rol1';
+```
+
 # Change the ownership of their objects
 
 ```sql
