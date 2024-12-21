@@ -126,3 +126,54 @@ If you identify that an external process is causing the lock, you can forcibly t
 ```sql
 SELECT pg_terminate_backend(<pid>);
 ```
+
+## Deactivate or minimize the impact of locking
+
+a. Change the transaction isolation level:
+
+If the transaction doesn’t require a high level of isolation, you might consider changing the isolation level to a less restrictive one, such as READ COMMITTED (default level) or READ UNCOMMITTED.
+
+```sql
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+```
+
+b. Use a concurrency model based on MVCC:
+
+PostgreSQL already uses MVCC (Multiversion Concurrency Control). Check if the locking occurs due to other long transactions holding unnecessary locks.
+
+Action: Identify long transactions:
+
+```sql
+SELECT * FROM pg_stat_activity WHERE state = 'active';
+```
+
+If you find sessions that are blocking the table, you can manually terminate those sessions:
+
+# Locking parameters
+
+- View all lock-related parameters
+
+```sql
+SELECT 
+    name, 
+    setting, 
+    unit, 
+    category, 
+    short_desc 
+FROM 
+    pg_settings 
+WHERE 
+    name LIKE '%lock%' OR name LIKE '%deadlock%' OR name LIKE '%timeout%' OR name LIKE '%concurrent%';
+```
+
+| Parameter                            | Description                                                                 |
+|--------------------------------------|-----------------------------------------------------------------------------|
+| `max_locks_per_transaction`          | Maximum number of locks that a single transaction can acquire.              |
+| `deadlock_timeout`                   | Time PostgreSQL waits before checking for a deadlock.                        |
+| `lock_timeout`                       | Maximum time a transaction will wait to acquire a lock before failing.      |
+| `idle_in_transaction_session_timeout`| Timeout for an idle session in an open transaction.                         |
+| `statement_timeout`                  | Maximum time a SQL statement can run before being canceled.                 |
+| `max_connections`                    | Maximum number of concurrent connections the server accepts, which can influence locks. |
+| `vacuum_defer_cleanup_age`           | Number of deferred transactions to avoid cleaning old versions that block queries. |
+
+
