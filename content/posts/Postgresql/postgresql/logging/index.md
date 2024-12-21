@@ -123,8 +123,10 @@ The log files will be overwritten after one week. %a is the day of the week and 
 - For backup period of one month, use %d: log_filename = 'postgresql-%d.log', and set log_rotation_age = 1440.
 The log file will be overwritten after a month. %d is the day of the month.
 
-# The log_min_messages parameter controls the level of detail for messages recorded in the server logs.
+# log_min_messages 
+Controls the level of detail for messages recorded in the server logs.
 
+The log_min_messages parameter controls the level of detail for messages recorded in the server logs.
 Log Levels for log_min_messages:
 
 - PANIC
@@ -157,163 +159,53 @@ Logs progressively more detailed debugging information.
   - DEBUG5 is extremely detailed. Useful for developers and administrators investigating complex issues.
 Note: These levels can generate a significant amount of log data, especially in high-activity environments.
 
-# The log_statement Parameter in PostgreSQL
+# log_statement
 
 The log_statement parameter determines what types of SQL queries will be logged in the server logs. It is used to monitor and debug the activity of queries reaching the server.
 Options for log_statement
 
-    none (default)
-    Does not log any SQL queries.
-    This is the most restrictive level and generates the least log load.
+- none (default)
+Does not log any SQL queries.
+This is the most restrictive level and generates the least log load.
 
-    ddl
-    Logs only Data Definition Language (DDL) statements.
-    Examples:
-        CREATE TABLE;
-        ALTER TABLE;
-        DROP INDEX;
-        Useful for tracking structural changes in the database.
+- ddl
+Logs only Data Definition Language (DDL) statements.
 
-    mod
-    Logs all DDL statements and those that modify data (DML).
-    Examples:
-        INSERT INTO;
-        UPDATE;
-        DELETE;
-        Does not log read-only queries like SELECT.
+```sql
+CREATE TABLE;
+ALTER TABLE;
+DROP INDEX;
+```
+Useful for tracking structural changes in the database.
 
-    all
-    Logs all SQL queries, including:
-        DDL: CREATE, ALTER, DROP
-        DML: INSERT, UPDATE, DELETE
-        Read-only queries: SELECT
-        This is the most detailed level and can generate significant log data.
+- mod
+Logs all DDL statements and those that modify data (DML).
 
-Effect of log_statement = 'all'
+```sql
+INSERT INTO;
+UPDATE;
+DELETE;
+```
+Does not log read-only queries like SELECT.
 
-When this option is enabled:
+- all
+Logs all SQL queries, including:
+  - DDL: CREATE, ALTER, DROP
+  - DML: INSERT, UPDATE, DELETE
+  - Read-only queries: SELECT
+This is the most detailed level and can generate significant log data.
+All queries executed by users or applications are logged, including successful and failed queries.
 
-    All queries executed by users or applications are logged, including successful and failed queries.
-    Useful for:
-        Debugging: Identifying which queries cause errors.
-        Auditing: Tracking all database activity.
+# Additional Logging Parameters
 
-The log_min_messages parameter controls the level of detail for messages recorded in the server logs.
-Log Levels for log_min_messages
-
-    PANIC
-    Logs only critical events that cause the PostgreSQL server to stop working.
-    Typically, this level is not needed unless investigating complete server crashes.
-
-    FATAL
-    Logs events that cause a session to terminate.
-    Example: authentication errors or critical issues processing a transaction.
-
-    ERROR
-    Logs errors that affect query execution but do not close the connection.
-    This is the default level.
-
-    WARNING
-    Logs warnings that do not stop execution but might indicate potential problems.
-    Example: corrupted indexes or incorrect configurations.
-
-    NOTICE
-    Logs informational messages about significant or unusual operations.
-    Example: information about query rewrites.
-
-    INFO
-    Provides additional information about server status or queries.
-    Useful for monitoring activity without high detail levels.
-
-    DEBUG1 to DEBUG5
-    Logs progressively more detailed debugging information.
-        DEBUG1 provides low detail.
-        DEBUG5 is extremely detailed.
-        Useful for developers and administrators investigating complex issues.
-        Note: These levels can generate a significant amount of log data, especially in high-activity environments.
-
-The log_statement Parameter in PostgreSQL
-
-The log_statement parameter determines what types of SQL queries will be logged in the server logs. It is used to monitor and debug the activity of queries reaching the server.
-Options for log_statement
-
-    none (default)
-    Does not log any SQL queries.
-    This is the most restrictive level and generates the least log load.
-
-    ddl
-    Logs only Data Definition Language (DDL) statements.
-    Examples:
-        CREATE TABLE;
-        ALTER TABLE;
-        DROP INDEX;
-        Useful for tracking structural changes in the database.
-
-    mod
-    Logs all DDL statements and those that modify data (DML).
-    Examples:
-        INSERT INTO;
-        UPDATE;
-        DELETE;
-        Does not log read-only queries like SELECT.
-
-    all
-    Logs all SQL queries, including:
-        DDL: CREATE, ALTER, DROP
-        DML: INSERT, UPDATE, DELETE
-        Read-only queries: SELECT
-        This is the most detailed level and can generate significant log data.
-
-Effect of log_statement = 'all'
-
-When this option is enabled:
-
-    All queries executed by users or applications are logged, including successful and failed queries.
-    Useful for:
-        Debugging: Identifying which queries cause errors.
-        Auditing: Tracking all database activity.
-
-Additional Logging Parameters in PostgreSQL
 1. client_min_messages: ERROR
-
-    Description: Sets the minimum level of messages sent to the client (application or tool running queries).
-    Levels:
-        DEBUG: Debugging messages.
-        LOG: General messages about operations.
-        NOTICE: Informational notices.
-        WARNING: Warnings.
-        ERROR: Errors that cause a query to fail.
-        FATAL: Fatal errors that terminate the connection.
-        PANIC: Critical errors that stop the server.
-    Impact: Setting it to ERROR ensures only errors and more severe messages are sent to the client.
+   Sets the minimum level of messages sent to the client (application or tool running queries).
 
 2. log_error_verbosity: TERSE
-
-    Description: Controls the level of detail in error messages recorded in logs.
-    Options:
-        TERSE: Basic information (error code, message, location).
-        DEFAULT: Standard information, includes function names causing errors.
-        VERBOSE: Detailed context and stack traces.
-    Impact: Using TERSE reduces log size by including only essential information, saving storage space.
+   Controls the level of detail in error messages recorded in logs.
 
 3. log_min_duration_statement: '-1'
-
-    Description: Specifies the minimum time (in milliseconds) a query must take to be logged.
-    Values:
-        Positive number: Logs queries exceeding the specified time (e.g., 5000 logs queries taking more than 5 seconds).
-        0: Logs all queries.
-        -1: Does not log queries based on duration.
-    Impact: Setting -1 avoids logging slow queries, reducing log load.
+   Specifies the minimum time (in milliseconds) a query must take to be logged.
 
 4. log_min_messages: ERROR
-
-    Description: Sets the minimum level of messages written to the server logs.
-    Levels:
-        DEBUG: Debugging messages.
-        INFO: Informational messages.
-        NOTICE: Informational notices.
-        WARNING: Warnings.
-        ERROR: Errors affecting a query.
-        FATAL: Errors affecting a session.
-        PANIC: Critical errors stopping the server.
-    Impact: Setting ERROR ensures only errors and more severe messages are logged, reducing log size.
+   Sets the minimum level of messages written to the server logs.
