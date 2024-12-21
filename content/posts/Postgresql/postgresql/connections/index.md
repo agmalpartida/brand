@@ -36,15 +36,22 @@ SELECT datname, datallowconn
 FROM pg_database;
 ```
 
-# active connections
+- Temporarily prevent new connections
+
+```sql
+ALTER DATABASE db_name ALLOW_CONNECTIONS false;
+ALTER DATABASE db_name ALLOW_CONNECTIONS true;
+```
+
+# Active Connections
 
 ```sql
 SELECT * FROM pg_stat_activity;
 ```
 
-Check:
-- state: Should be active for working connections. If you see many connections in idle, Pentaho might not be closing them properly.
-- waiting: If true, there may be locks or concurrency issues.
+- Check:
+  - state: Should be active for working connections. If you see many connections in idle, Pentaho might not be closing them properly.
+  - waiting: If true, there may be locks or concurrency issues.
 
 To check global connections to any database:
 
@@ -66,6 +73,14 @@ SELECT datname AS database_name,
 FROM pg_stat_activity
 WHERE datname = 'db_name'
 GROUP BY datname;
+```
+
+- Close active connections
+
+```sql
+SELECT pg_terminate_backend(pid) 
+FROM pg_stat_activity 
+WHERE datname = 'db_name' AND pid <> pg_backend_pid();
 ```
 
 # max_connections
