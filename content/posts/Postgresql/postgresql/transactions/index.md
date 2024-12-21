@@ -141,13 +141,38 @@ b. Use a concurrency model based on MVCC:
 
 PostgreSQL already uses MVCC (Multiversion Concurrency Control). Check if the locking occurs due to other long transactions holding unnecessary locks.
 
-Action: Identify long transactions:
+If a transaction is trying to acquire an exclusive lock (ACCESS EXCLUSIVE MODE) on the table, which blocks any other operation on that table until the transaction is completed. 
+
+c. Redefine the access policies for the table:
+
+You can change the permissions of users or processes attempting to apply locks on the table to restrict who can use LOCK.
+
+## Use partitioning or temporary tables
+
+If your process needs to process data in a table, consider using partitions or temporary tables.
+This can reduce the need to lock the entire table.
+
+Example: Temporarily move data to a table before performing the operation.
 
 ```sql
-SELECT * FROM pg_stat_activity WHERE state = 'active';
+CREATE TEMP TABLE temp_logjob AS SELECT * FROM <scheme>.<table> WHERE <conditions>;
 ```
 
-If you find sessions that are blocking the table, you can manually terminate those sessions:
+## 	Review indexes and schemas
+Make sure the table is optimized and has the correct indexes to avoid prolonged locks due to operations that take too long.
+If the table is small and the issue persists, reviewing its design (such as avoiding UNIQUE or FOREIGN KEYS in certain cases) might be helpful.
+
+- Modify server behavior: Global configuration
+
+In the PostgreSQL configuration file (postgresql.conf), you can adjust parameters related to locking.
+
+Example:
+- deadlock_timeout: Reduces the time PostgreSQL takes to detect lock conflicts.
+- lock_timeout: Sets a timeout for acquiring locks.
+
+```sql
+SET lock_timeout = '5s';
+```
 
 # Locking parameters
 
