@@ -62,6 +62,22 @@ Allow object creation in the schema
 GRANT CREATE ON SCHEMA public TO user_name;
 ```
 
+# Delete users
+
+If the role has dependencies (e.g., it owns any objects), you must reassign those objects before deleting the role. Use the REASSIGN OWNED command to reassign the objects to another role before removing it.
+
+- Reassign all objects from ‘rol1’ to ‘rol2’
+```sql
+REASSIGN OWNED BY rol1 TO rol2;
+```
+
+- Remove all privileges granted to the role
+
+```sql
+DROP OWNED BY rol1;
+DROP ROLE rol1;
+```
+
 # Change the ownership of their objects
 
 ```sql
@@ -92,4 +108,5 @@ PostgreSQL does not allow deleting a user if they own tables, databases, sequenc
 SELECT tablename FROM pg_tables WHERE tableowner = 'user_name';
 SELECT datname FROM pg_database WHERE datdba = (SELECT oid FROM pg_roles WHERE rolname = 'user_name');
 ```
+
 
