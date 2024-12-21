@@ -63,3 +63,9 @@ PostgreSQL allows you to apply configurations for specific users/roles. If a use
 ```sql
 ALTER ROLE my_user SET log_statement = 'all';
 ```
+
+# By sessión
+
+```sql
+SET log_statement = 'all';
+```

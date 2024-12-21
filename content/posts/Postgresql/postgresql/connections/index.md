@@ -39,6 +39,18 @@ Check:
 - state: Should be active for working connections. If you see many connections in idle, Pentaho might not be closing them properly.
 - waiting: If true, there may be locks or concurrency issues.
 
+To check global connections to any database:
+
+If you want to list all databases with active connections, you can use:
+
+```sql
+SELECT datname AS database_name,
+       COUNT(*) AS active_connections
+FROM pg_stat_activity
+GROUP BY datname
+ORDER BY active_connections DESC;
+```
+
 # max_connections
 Check the configured maximum limit:
 
