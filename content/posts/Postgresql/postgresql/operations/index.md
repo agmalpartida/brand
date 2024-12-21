@@ -80,4 +80,34 @@ FROM pg_catalog.pg_user
 ORDER BY role_name desc;
 ```
 
+# psql
 
+- db owner 
+
+```
+\dt+ <scheme>.*
+\dt+ *.*
+```
+
+```sql
+SELECT datname AS base_de_datos, pg_catalog.pg_get_userbyid(datdba) AS owner
+FROM pg_database;
+
+SELECT pg_catalog.pg_get_userbyid(datdba) AS owner 
+FROM pg_database
+WHERE datname = 'db_name';
+```
+
+- export result
+
+```
+\o file.txt
+```
+
+- exec script
+
+```
+psql -d mydb -f tasks.sql
+
+\i tasks.sql
+```
