@@ -33,7 +33,19 @@ WHERE pg_stat_activity.datname = 'db_name'
 # Change Password
 
 ```sql
-ALTER USER user_name WITH PASSWORD '';
+ALTER ROLE rol_name WITH PASSWORD 'nueva_contraseña';
+```
+
+If you are changing the password for the role you are connected with, you can use:
+
+```
+\password role_name
+```
+
+To verify that the password has been changed successfully, you can check the roles in the pg_roles table:
+
+```sql
+SELECT rolname, rolvaliduntil FROM pg_roles WHERE rolname = 'rol_name';
 ```
 
 # Create users

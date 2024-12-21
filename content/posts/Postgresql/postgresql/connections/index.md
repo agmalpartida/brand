@@ -29,6 +29,13 @@ SELECT * FROM pg_stat_activity;
 SELECT datname, numbackends FROM pg_stat_database;
 ```
 
+# ALLOW OR DENY CONNECTIONS TO A DB
+
+```sql
+SELECT datname, datallowconn
+FROM pg_database;
+```
+
 # active connections
 
 ```sql
@@ -49,6 +56,16 @@ SELECT datname AS database_name,
 FROM pg_stat_activity
 GROUP BY datname
 ORDER BY active_connections DESC;
+```
+
+To check if a database is connected in PostgreSQL, you can use the system view pg_stat_activity. Here is a query to check if there are active connections to a specific database:
+
+```sql
+SELECT datname AS database_name,
+       COUNT(*) AS active_connections
+FROM pg_stat_activity
+WHERE datname = 'db_name'
+GROUP BY datname;
 ```
 
 # max_connections
@@ -174,6 +191,21 @@ REVOKE CONNECT ON DATABASE db_name FROM PUBLIC;
 ```sql
 ALTER ROLE username NOLOGIN;
 ```
+
+# User Permissions 
+
+If the role is a user that can connect: You can use LOGIN to ensure the role has login permissions.
+
+```sql
+ALTER ROLE rol_name WITH LOGIN PASSWORD 'new_passwd';
+```
+
+If you want to force the password to expire so the user must change it on the next login:
+
+```sql
+ALTER ROLE rol_name PASSWORD 'new_passwd' VALID UNTIL '2024-12-31';
+```
+
 
 # Transaction timeouts
 
