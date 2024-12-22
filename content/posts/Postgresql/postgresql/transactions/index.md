@@ -201,4 +201,12 @@ WHERE
 | `max_connections`                    | Maximum number of concurrent connections the server accepts, which can influence locks. |
 | `vacuum_defer_cleanup_age`           | Number of deferred transactions to avoid cleaning old versions that block queries. |
 
+# Transactions parameters
+
+[Reference](https://www.postgresql.org/docs/17/runtime-config-client.html) 
+
+- transaction_timeout (integer)
+  Terminate any session that spans longer than the specified amount of time in a transaction. The limit applies both to explicit transactions (started with BEGIN) and to an implicitly started transaction corresponding to a single statement. If this value is specified without units, it is taken as milliseconds. A value of zero (the default) disables the timeout.
+  If transaction_timeout is shorter or equal to idle_in_transaction_session_timeout or statement_timeout then the longer timeout is ignored.
+  Setting transaction_timeout in postgresql.conf is not recommended because it would affect all sessions.
 

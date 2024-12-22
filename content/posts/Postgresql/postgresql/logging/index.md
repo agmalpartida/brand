@@ -123,6 +123,21 @@ The log files will be overwritten after one week. %a is the day of the week and 
 - For backup period of one month, use %d: log_filename = 'postgresql-%d.log', and set log_rotation_age = 1440.
 The log file will be overwritten after a month. %d is the day of the month.
 
+## Force log rotation
+
+```sql
+SELECT pg_rotate_logfile();
+```
+
+- Verify if pg_rotate_logfile is applicable:
+
+The command SELECT pg_rotate_logfile(); only works if:
+
+- logging_collector is enabled (on).
+- A log filename pattern that supports rotation is being used, such as postgresql-%a.log.
+
+If any of these conditions are not met, the command will have no effect.
+
 # log_min_messages 
 Controls the level of detail for messages recorded in the server logs.
 
