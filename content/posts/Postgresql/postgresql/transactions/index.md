@@ -210,3 +210,19 @@ WHERE
   If transaction_timeout is shorter or equal to idle_in_transaction_session_timeout or statement_timeout then the longer timeout is ignored.
   Setting transaction_timeout in postgresql.conf is not recommended because it would affect all sessions.
 
+# Restart point starting
+
+A "restart point" is similar to a "checkpoint" in a functioning database, but it occurs when the database is in recovery mode (e.g., during a recovery process after a failure).
+
+- Restart point complete:
+  This line details the statistics of what PostgreSQL did during the restart point:
+
+- lsn=1D/96012DE0, redo lsn=1D/96012D88:
+    LSN (Log Sequence Number): A number indicating a position in the WAL file. It marks where this restart point was completed.
+    Redo LSN: Indicates the oldest position in the WAL from where records need to be replayed.
+
+- Recovery restart point at 1D/96012D88
+  This confirms that the restart point was set at LSN 1D/96012D88.
+  The database will be able to recover quickly from this point without needing to process earlier records in the WAL.
+
+The restart point helps reduce recovery time by creating a "safe point" from which the database can quickly restart in the event of subsequent failures.

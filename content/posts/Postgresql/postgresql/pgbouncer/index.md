@@ -34,3 +34,9 @@ showActions: false
 | **avg_xact_time**        | Average transaction duration in microseconds.                                                                         |
 | **avg_query_time**       | Average query duration in microseconds.                                                                               |
 | **avg_wait_time**        | Average wait time to acquire a connection from the pool, in microseconds.                                            |
+
+# View real-time statistics
+
+```bash
+watch -n 5 "PGPASSWORD='' psql -h 127.0.0.1 -p 6432 -U postgres -d pgbouncer -c 'SHOW STATS;'"
+```
