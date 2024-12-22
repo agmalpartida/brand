@@ -138,6 +138,28 @@ The command SELECT pg_rotate_logfile(); only works if:
 
 If any of these conditions are not met, the command will have no effect.
 
+# logrotate
+
+You can use logrotate to automatically manage the rotation and truncation of logs. If logrotate is installed, create a specific configuration file for PostgreSQL, such as /etc/logrotate.d/postgresql:
+
+```sql
+/var/log/postgresql/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 640 postgres postgres
+    copytruncate
+}
+```
+
+- daily: Rotate logs daily.
+- rotate 7: Keep the last 7 log files.
+- compress: Compress old logs.
+- copytruncate: Copy the content to a new file and truncate the original one without affecting the processes writing to it.
+
 # log_min_messages 
 Controls the level of detail for messages recorded in the server logs.
 
