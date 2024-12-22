@@ -103,6 +103,29 @@ If you are setting shared_buffers to 2GB, ensure that max_connections is adjuste
 -	Total RAM * 0.25 = shared_buffers
 -	Remaining RAM = work_mem, processes, etc.
 
+# pg_hba.conf
+
+This is the authentication configuration file in PostgreSQL. It defines how clients can connect to the server and what authentication methods should be used. In this file, you can specify:
+
+- Connection type (local, host, hostssl, etc.).
+- Database.
+- User.
+- IP address (if applicable).
+- Authentication method (md5, trust, scram-sha-256, etc.).
+
+The file is usually located in PostgreSQL's data directory and is used to control database access.
+
+Allow local connections without encryption for the user admin in the database db_name.
+
+`local   db_name     admin         trust` 
+
+If you prefer to allow access to all users and databases via local connection.
+
+```
+local   all         all           md5
+local   all         admin         md5
+```
+
 # Handle many clients
 
 If you expect to handle many clients, it is preferable to use PgBouncer with a high max_client_conn and adjust max_connections in Patroni according to the available resources.
