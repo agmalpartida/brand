@@ -272,12 +272,6 @@ It will reinitialize node in the cluster. If you want to reinitialize particular
 patronictl -c /etc/patroni/patroni.yaml reinit <CLUSTER_NAME> <NODE_NAME>
 ```
 
-# 💡Pro-Tip:
-
-Instead of using `-c /etc/patroni/patroni.yaml`  with patronictl you can set alias in your .profile file
-
-`alias patronictl='patronictl -c /etc/patroni/patroni.yaml'` 
-
 
 # API
 
@@ -549,3 +543,11 @@ patronictl -c /etc/patroni/config.yml show-config
 ```
 
 You should see the new dynamic configuration applied.
+
+💡Pro-Tip: Changes in pg_hba.conf are not dynamically applied
+
+💡Pro-Tip: Instead of using `-c /etc/patroni/patroni.yaml`  with patronictl you can set alias in your .profile file
+
+`alias patronictl='patronictl -c /etc/patroni/patroni.yaml'` 
+
+
