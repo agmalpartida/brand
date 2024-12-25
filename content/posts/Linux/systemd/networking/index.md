@@ -56,3 +56,16 @@ networkctl status
 
 journalctl -u systemd-networkd
 ```
+
+- Show service
+
+```
+systemctl cat <service>
+```
+
+- Edit service
+
+```
+systemctl edit <service>
+```
+

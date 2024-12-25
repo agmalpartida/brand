@@ -81,7 +81,10 @@ ORDER BY role_name desc;
 ```
 
 # psql
-
+- users list
+```
+\du
+```
 - db owner 
 
 ```
