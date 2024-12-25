@@ -226,3 +226,42 @@ A "restart point" is similar to a "checkpoint" in a functioning database, but it
   The database will be able to recover quickly from this point without needing to process earlier records in the WAL.
 
 The restart point helps reduce recovery time by creating a "safe point" from which the database can quickly restart in the event of subsequent failures.
+
+# TOAST
+
+In PostgreSQL, TOAST (The Oversized-Attribute Storage Technique) is a technique used to efficiently store large data in a database. It is not a data structure or table you can directly view, but rather an internal implementation that PostgreSQL automatically employs to handle columns with large values, such as lengthy texts, large binary objects (BLOBs), or extensive records.
+
+- TOAST is a mechanism used to store columns with large data (e.g., texts, images, binary files, etc.) that exceed the maximum size allowed for a row in a table.
+- It allows PostgreSQL to efficiently handle columns with large volumes of data without negatively affecting database performance.
+- PostgreSQL does not directly store large data within the table row but “compresses” and stores it in a separate TOAST table.
+- The TOAST table is automatically created by PostgreSQL when it detects that a column has a value exceeding the row size limit (by default, 8 KB).
+- Large data is stored outside the main table and linked with an identifier, enabling access without significantly impacting the performance of normal queries.
+
+When you define a column with a large data type (such as TEXT, BYTEA, VARCHAR, etc.) and the data size exceeds PostgreSQL’s row size limit, the internal TOAST table is used automatically.
+TOAST has its own table associated with each table containing large columns. This internal table is not visible to the user, but PostgreSQL manages it in the background.
+
+For example, if you have a table called my_table with a large_data column, PostgreSQL may create an internal table named something like pg_toast.pg_toast_12345 (where 12345 is the OID of the my_table table) to store the large data.
+
+Practical example of how TOAST handles large data:
+
+If you have a table with a TEXT column and the values in this column are very large (e.g., extensive text files or JSON objects), PostgreSQL will automatically move the large data to the TOAST table to maintain performance for operations on the main table.
+
+```sql
+CREATE TABLE my_table (
+  id SERIAL PRIMARY KEY,
+  large_data TEXT
+);
+```
+
+When you insert a large value into the large_data column, PostgreSQL will store it in an internal TOAST table if the value exceeds the maximum row size.
+
+```sql
+INSERT INTO my_table (large_data) VALUES ('This is a very long text that exceeds the row size and will be stored in the TOAST table');
+``` 
+
+- Benefits of TOAST:
+
+1. Storage Efficiency: It allows large data to be stored without worrying about row size limitations.
+2. Compression: TOAST can compress the data before storing it, reducing disk space usage.
+3. Transparent Access: Users do not need to directly interact with the TOAST table. PostgreSQL automatically manages the storage and retrieval of large data.
+
