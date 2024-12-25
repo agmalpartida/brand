@@ -544,7 +544,6 @@ patronictl -c /etc/patroni/config.yml show-config
 
 You should see the new dynamic configuration applied.
 
-💡Pro-Tip: Changes in pg_hba.conf are not dynamically applied
 
 💡Pro-Tip: Instead of using `-c /etc/patroni/patroni.yaml`  with patronictl you can set alias in your .profile file
 
