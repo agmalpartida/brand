@@ -17,7 +17,11 @@ showMeta: false
 showActions: false
 ---
 
-# Overview
+# PostgreSQL HA With Patroni
+
+Percona Distribution for PostgreSQL provides the best and most critical enterprise components from the open-source community, in a single distribution, designed and tested to work together.
+
+[Reference](https://docs.percona.com/postgresql/17/) 
 
 ![HA](./assets/PostgreSQL_High_Availability.png) 
 
@@ -37,4 +41,6 @@ Components include:
 - etcd– a distributed, reliable key-value store for setting up highly available Patroni clusters
 - pgpool-ll – a middleware between PostgreSQL server and client for high availability, connection pooling and load balancing.
 
+# Failure Scenarios and How the Cluster Recovers From Them
+By unplugging network and power cables, killing main processes, attempting to saturate processors. All of this while continuously writing and reading data from PostgreSQL. The idea was to see how Patroni would handle the failures and manage the cluster to continue delivering service.
 
