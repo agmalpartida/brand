@@ -143,7 +143,21 @@ Whenever a WAL file is completed, PostgreSQL transfers it to a specified locatio
   - Requires additional storage for WAL files.
   - More granular than a full backup, as it records all transactions.
 
+# Checkpoint
+
+Force:
+
+```bash
+sudo -u postgres psql -c "CHECKPOINT;"
+```
+
 # Example
+
+- Check if archiving is working fine:
+
+```sql
+SELECT * FROM pg_stat_archiver;
+```
 
 ```
 2024-12-18 20:49:59.524 P00   INFO: archive-push command begin 2.53.1: [pg_wal/00000038000000720000007E] --exec-id=1079752-ccdfbdb0 --log-level-console=info --log-level-file=debug --pg1-path=/var/lib/postgresql/17/main --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --stanza=psqlcluster01-backup

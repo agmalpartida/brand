@@ -23,3 +23,10 @@ export PATH=$PATH:/usr/lib/postgresql/15/bin
 pg_ctl -D /var/lib/postgresql/15/main/ initdb
 ```
 
+# init db manually
+
+```bash
+sudo -u postgres /usr/lib/postgresql/17/bin/postgres -D /var/lib/postgresql/17/main
+```
+
+
