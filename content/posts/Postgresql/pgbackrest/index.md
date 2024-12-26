@@ -438,6 +438,63 @@ sudo pg_ctlcluster 15 demo start
 
 This time the cluster started successfully since the restore replaced the missing pg_control file. 
 
+- Example:
+
+Now that a full backup is performed on a fresh database, it might be useful to test restoring from the full backup.
+
+To do this, stop the PostgreSQL instance, and delete its data files, simulating a system administration disaster.
+
+```bash
+sudo systemctl stop postgresql
+sudo find /var/lib/postgresql/15/demo -mindepth 1 -delete
+```
+
+At this point, trying to start the database will result in a failure:
+
+```bash
+$ sudo systemctl start postgresql
+## THIS WILL FAIL
+```
+
+Perform a restore on the database:
+
+```bash
+sudo -iu postgres pgbackrest --stanza=demo --delta restore
+```
+
+Once the restore has completed, the database will start as expected:
+
+```bash
+sudo systemctl start postgresql
+```
+
+You can verify that pgBackRest is still working:
+
+```bash
+$ sudo -u postgres pgbackrest --stanza=demo check
+```
+
+After any sort of disaster instance, it is always best practice to follow up any restore with a fresh backup:
+
+```bash
+sudo -u postgres pgbackrest --stanza=demo --type=full backup
+```
+
+To restore from backup to the same location on the DB server and at a specified time, you can start the restore process with the following command:
+
+```bash
+sudo -u postgres pgbackrest --stanza=db-primary --type=time --target="2022-06-02 17:05:23" restore
+```
+
+To restore from backup to a desired location on the DB server, you can start the restore process with the following command:
+
+```bash
+sudo -u postgres pgbackrest --stanza=db-primary --reset-pg1-host --pg1-path=/var/lib/pgsql/14/restored restore
+```
+
+If only missing files need to be added, you can use the --delta parameter. This parameter restores only missing files.
+
+
 ##  Monitoring
 
 Monitoring is an important part of any production system. There are many tools available and pgBackRest can be monitored on any of them with a little work.

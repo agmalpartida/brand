@@ -62,6 +62,10 @@ In your `accounting` database, you could have:
 - **Database**: Large-scale organization, contains everything.
 - **Schema**: Subdivision within a database for better structuring of data.
 
+A PostgreSQL "schema" is roughly the same as a MySQL "database". Having many databases on a PostgreSQL installation can get problematic; having many schemas will work with no trouble. So you definitely want to go with one database and multiple schemas within that database.
+
+[Reference](https://www.postgresql.org/docs/current/manage-ag-templatedbs.html) 
+
 # Tuple
 
 In PostgreSQL, a **tuple** refers to a row of data within a table. It is a term primarily used in the context of relational databases and derives from the relational model, where a tuple represents an instance of a dataset that adheres to the structure defined by the table schema.
