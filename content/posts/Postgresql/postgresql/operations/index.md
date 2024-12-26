@@ -86,6 +86,12 @@ FROM pg_catalog.pg_user
 ORDER BY role_name desc;
 ```
 
+## Change password
+
+```sql
+ALTER USER postgres PASSWORD 'demoPassword';
+```
+
 # psql
 - users list
 ```
