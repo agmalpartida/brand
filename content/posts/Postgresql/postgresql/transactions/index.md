@@ -210,6 +210,23 @@ WHERE
   If transaction_timeout is shorter or equal to idle_in_transaction_session_timeout or statement_timeout then the longer timeout is ignored.
   Setting transaction_timeout in postgresql.conf is not recommended because it would affect all sessions.
 
+# Temp files
+
+The temp_file_limit parameter in PostgreSQL is used to control the maximum size allowed for temporary files created by database queries.
+
+- temp_file_limit
+  Specifies the total limit of disk space a PostgreSQL session can use for temporary files.
+  Temporary files are created when an operation cannot be fully performed in memory (RAM) due to a lack of space in the work_mem buffers.
+
+The value is specified in kilobytes (kB). A value of 0 means no limit, i.e., PostgreSQL can use as much disk space as necessary for temporary operations.
+
+Typical temporary files:
+
+- Large sorts (when they do not fit in work_mem).
+- Large hash joins.
+- Queries with temporary indexes or intermediate tables.
+
+
 # Restart point starting
 
 A "restart point" is similar to a "checkpoint" in a functioning database, but it occurs when the database is in recovery mode (e.g., during a recovery process after a failure).

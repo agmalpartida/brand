@@ -19,6 +19,8 @@ showActions: false
 
 # Load stress with pgbench
 
+[Reference](https://www.postgresql.org/docs/current/pgbench.html) 
+
 pgbench is provided with postgres-client package.
 
 ```bash
