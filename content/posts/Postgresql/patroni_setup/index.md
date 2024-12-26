@@ -203,6 +203,8 @@ sudo rm -fr /var/lib/postgresql/17/main
 
 # Patroni 
 
+When Patroni starts, it will take care of initializing PostgreSQL (because the service is not currently running and the data directory is empty) following the directives in the bootstrap section of Patroni’s configuration file. If everything went according to the plan, you should be able to connect to PostgreSQL using the credentials in the configuration file.
+
 ```sh
 sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -237,7 +239,7 @@ mkdir -p /etc/patroni/logs/ #directory to store logs
 chmod 777 /etc/patroni/logs 
 ```
 
-4. Create config file for patroni as below (/etc/patroni/patroni.yml)
+4. Create config file for patroni as below (if you installed patroni from percona's repository, the config file should be called `/etc/patroni/patroni.yml`).
 
 `touch /etc/patroni/patroni.yml` 
 
