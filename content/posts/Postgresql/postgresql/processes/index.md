@@ -19,6 +19,8 @@ showActions: false
 
 # Load stress with pgbench
 
+pgbench is provided with postgres-client package.
+
 ```bash
 pgbench -h <host> -U <user> -T 60 -c 10 -j 2 <dbname>
 ```
@@ -39,4 +41,12 @@ creating primary keys...
 done in 1.22 s (drop tables 0.03 s, create tables 0.13 s, client-side generate 0.80 s, vacuum 0.14 s, primary keys 0.11 s).
 ```
 
+## Parameters
+
+- `-T 300`: Run the test for 300 seconds (5 minutes).
+- `-c 200`: Use 200 concurrent clients. You can increase or decrease it according to the desired stress level.
+- `-j 50`: Use 50 threads. Increasing the threads helps to take advantage of the available CPU cores.
+- `-S`: Executes SELECT queries (reads) only. If you want to perform reads and writes, omit this parameter.
+- `-C`: Each transaction uses a new connection. This can stress both the network and the connection handler.
+- `-M prepared`: Uses prepared statements, which can improve performance by reducing the cost of query parsing.
 
