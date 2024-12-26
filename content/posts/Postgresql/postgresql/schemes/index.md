@@ -15,6 +15,8 @@ showActions: false
 
 # Databases and Schemas in PostgreSQL
 
+[Reference DBs](https://www.postgresql.org/docs/current/manage-ag-templatedbs.html) 
+
 In PostgreSQL, a "cluster" does not refer to a group of networked servers (as it might in other databases or distributed systems). Instead, a cluster in PostgreSQL refers to a set of databases that share the same data directory, a common configuration, and are managed by a single PostgreSQL server instance.
 
 1. Dedicated Data Directory
