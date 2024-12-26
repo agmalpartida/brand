@@ -17,7 +17,32 @@ showActions: false
 
 # High Availability in PostgreSQL with Patroni
 
-## Overview
+Percona Distribution for PostgreSQL provides the best and most critical enterprise components from the open-source community, in a single distribution, designed and tested to work together.
+
+[Reference](https://docs.percona.com/postgresql/17/) 
+
+![HA](./assets/PostgreSQL_High_Availability.png) 
+
+Components include:
+
+- PostGIS support for geographic objects.
+- pg_repack rebuilds PostgreSQL database objects. 
+- pgAudit provides detailed session or object audit logging via the standard PostgreSQL logging facility.
+- pgAudit set_user – The set_user part of pgAudit extension provides an additional layer of logging and control when unprivileged users must escalate themselves to superuser or object owner roles in order to perform needed maintenance tasks.
+- pgBackRest is a backup and restore solution for PostgreSQL.
+- Patroni is an HA (High Availability) solution for PostgreSQL.
+- pg_stat_monitor collects and aggregates statistics for PostgreSQL and provides histogram information.
+- PgBouncer – a lightweight connection pooler for PostgreSQL.
+- pgBadger – a fast PostgreSQL Log Analyzer.
+- wal2json – a PostgreSQL logical decoding JSON output plugin.
+- HAProxy – a high-availability and load-balancing solution.
+- etcd– a distributed, reliable key-value store for setting up highly available Patroni clusters
+- pgpool-ll – a middleware between PostgreSQL server and client for high availability, connection pooling and load balancing.
+
+- Failure Scenarios and How the Cluster Recovers From Them
+By unplugging network and power cables, killing main processes, attempting to saturate processors. All of this while continuously writing and reading data from PostgreSQL. The idea was to see how Patroni would handle the failures and manage the cluster to continue delivering service.
+
+## Patroni 
 
 [Reference](https://patroni.readthedocs.io/en/latest/) 
 
@@ -86,8 +111,7 @@ License: The MIT License
 Location: /usr/lib/python3/dist-packages
 ```
 
-
-## What does Patroni do?
+### What does Patroni do?
 
 Basically, everything you need to run highly available PostgreSQL clusters!
 Patroni creates the cluster, initiates streaming replication, handles synchronicity requirements, monitors liveliness of primary and replica, can change the configuration of all cluster members, issues reload commands and restarts selected cluster members, handles planned switchovers and unplanned failovers, rewinds a failed primary to bring it back in line and reinitiates all replication connections to point to the newly promoted primary.
@@ -135,7 +159,9 @@ There are several native methods for achieving high availability with PostgreSQL
 
 # Software & Hardware
 
-# [ETCD](https://etcd.io/) 
+## [ETCD](https://etcd.io/) 
+
+Patroni supports a myriad of systems for Distribution Configuration Store but etcd remains a popular choice. 
 
 - Distributed Consensus Store (DCS): Patroni requires a DCS system, such as ETCD, Consul, or Zookeeper, to store vital configuration data and real-time status information of the nodes. We will use odd number (>1) of servers here we are using 3 nodes with minimum configuration.
 
@@ -145,63 +171,19 @@ The process of electing a leader involves making an attempt in Etcd to set an ex
 - Use a larger Etcd cluster to improve availability: if one Etcd node fails, it will not affect our Postgres servers.
 - Use **PgBouncer** to pool connections.
 
-# HAProxy
+## HAProxy
 - Load Balancer (e.g., HAProxy): A crucial element in the setup is a load balancer, like HAProxy. It plays a pivotal role in distributing incoming traffic across the PostgreSQL instances, ensuring all traffic should go to only master node. We will use two machines with minimum configuration - you can also utilize 1 HAProxy server but in this case we need to compromise on single point of failure.
 
 HAProxy monitors changes in the master/slave nodes and connects to the appropriate master node when clients request a connection. HAProxy determines which node is the master by calling the Patroni REST API. The Patroni REST API is configured to run on port 8008 in each database node.
 Failover Times: Failover times may not always be instantaneous, depending on the cluster’s state and the reasons for failover. There may be a short period of unavailability while a new leader is elected and the cluster is reconfigured.
 
-# PostgreSQL 
+## PostgreSQL 
 
 Version 9.5 and Above: Patroni seamlessly integrates with PostgreSQL versions 9.5 and higher, providing advanced features and reliability enhancements. This compatibility ensures that you can leverage the latest capabilities of PostgreSQL while maintaining high availability. Hardware configuration for these nodes is dependent on the database size. For setting up you can start with 2 cores and 8GB RAM.
 
 Deploying three PostgreSQL servers instead of two adds an extra layer of protection, safeguarding against multi-node failures and bolstering system reliability.
 
 ![patroni](./assets/patroni-architecturei2.png) 
-
-## Set up
-
-```bash
-sudo apt-get update -y; sudo apt-get install -y wget gnupg2 lsb-release curl
-```
-
-Install the percona-release repository management tool to subscribe to Percona repositories:
-
-```bash
-wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
-sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
-sudo apt update
-```
-
-Enable repository:
-Percona provides two repositories for Percona Distribution for PostgreSQL. Percona recommend enabling the Major release repository to timely receive the latest updates. 
-
-```bash
-sudo percona-release setup ppg-17
-```
-
-The meta package enables you to install several components of the distribution in one go.
-
-```bash
-sudo apt install percona-ppg-server-17
-
-psql --version
-sudo systemctl status postgresql.service
-ss -lnt
-```
-
-**An important concept to understand** in a PostgreSQL HA environment like this one is that PostgreSQL should not be started automatically by systemd during the server initialization: we should leave it to Patroni to fully manage it, including the process of starting and stopping the server. Thus, we should disable the service:
-
-```bash
-systemctl disable postgresql
-```
-
-(all nodes) We want to start with a fresh new PostgreSQL setup and let Patroni bootstrap the cluster, so we stop the server and remove the data directory that has been created as part of the PostgreSQL installation:
-
-```bash
-sudo systemctl stop postgresql
-sudo rm -fr /var/lib/postgresql/17/main
-```
 
 # Patroni common operations
 
@@ -263,7 +245,6 @@ Are you sure you want to switchover cluster psqlcluster01, demoting current lead
 | psql03.acme.cloud | psql03.acme.cloud | Replica | running  | 39 |         0 |
 +-----------------------+-----------------------+---------+----------+----+-----------+
 ```
-
 
 ## patronictl pause
 

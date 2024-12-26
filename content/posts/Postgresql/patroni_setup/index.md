@@ -157,7 +157,51 @@ Remove nofailover tag:
 curl -XPATCH -d '{"tags": {"nofailover": false}}' http://127.0.0.1:8008/config
 ```
 
-# Patroni and Postgres Installation
+# Postgres Set up
+
+```bash
+sudo apt-get update -y; sudo apt-get install -y wget gnupg2 lsb-release curl
+```
+
+Install the percona-release repository management tool to subscribe to Percona repositories:
+
+```bash
+wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
+sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
+sudo apt update
+```
+
+Enable repository:
+Percona provides two repositories for Percona Distribution for PostgreSQL. Percona recommend enabling the Major release repository to timely receive the latest updates. 
+
+```bash
+sudo percona-release setup ppg-17
+```
+
+The meta package enables you to install several components of the distribution in one go.
+
+```bash
+sudo apt install percona-ppg-server-17
+
+psql --version
+sudo systemctl status postgresql.service
+ss -lnt
+```
+
+**An important concept to understand** in a PostgreSQL HA environment like this one is that PostgreSQL should not be started automatically by systemd during the server initialization: we should leave it to Patroni to fully manage it, including the process of starting and stopping the server. Thus, we should disable the service:
+
+```bash
+systemctl disable postgresql
+```
+
+(all nodes) We want to start with a fresh new PostgreSQL setup and let Patroni bootstrap the cluster, so we stop the server and remove the data directory that has been created as part of the PostgreSQL installation:
+
+```bash
+sudo systemctl stop postgresql
+sudo rm -fr /var/lib/postgresql/17/main
+```
+
+# Patroni 
 
 ```sh
 sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -169,13 +213,22 @@ sudo apt-get -y install postgresql
 1. Install Patroni service. You need to install extra package required for connecting to etcd.
 
 ```sh
-apt install patroni
+apt install percona-patroni
 apt install python3-etcd3
+
+sudo mkdir -p /var/log/patroni
+sudo chown postgres:postgres /var/log/patroni
+sudo chmod 755 /var/log/patroni
+
+sudo mkdir -p /var/run/postgresql
+sudo chown postgres:postgres /var/run/postgresql
+sudo chmod 775 /var/run/postgresql
 ```
 
 2. Enable Patroni service
 
 `systemctl enable patroni` 
+`cat /usr/lib/systemd/system/patroni.service` 
 
 3. Create configuration file and required directories for patroni:
 
