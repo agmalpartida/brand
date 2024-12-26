@@ -117,4 +117,15 @@ SELECT tablename FROM pg_tables WHERE tableowner = 'user_name';
 SELECT datname FROM pg_database WHERE datdba = (SELECT oid FROM pg_roles WHERE rolname = 'user_name');
 ```
 
+# Check permissions
+
+```sql
+SELECT grantee.rolname AS grantee,
+       table_schema,
+       table_name,
+       privilege_type
+FROM information_schema.role_table_grants
+JOIN pg_roles grantee ON grantee.rolname = role_table_grants.grantee
+ORDER BY grantee, table_schema, table_name;
+```
 
