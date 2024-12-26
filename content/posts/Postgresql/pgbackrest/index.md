@@ -181,9 +181,22 @@ repo1-retention-full=2
 compress-level=3
 ``` 
 
+Once we have pgBackRest configured and running, it is very important to make a copy of the pgbackrest.conf file. This file contains our encryption key, Azure credentials (key, account, and bucket).
+
+💡Pro-Tip: IF WE LOSE THIS FILE, WE WILL NOT BE ABLE TO RECOVER OUR BACKUPS.
+
+Additionally, keep in mind that pgBackRest splits backups into small files, which makes it easier to upload them to our Azure account instead of uploading a single large file.
+
 ## Create the Stanza 
 
 The stanza-create command must be run to initialize the stanza. It is recommended that the check command be run after stanza-create to ensure archiving and backups are properly configured.
+
+```
+$ sudo -u postgres pgbackrest --stanza=prod_backup stanza-create
+2021-11-07 11:08:18.157 P00   INFO: stanza-create command begin 2.36: --exec-id=155883-2277a3e7 --log-level-console=info --log-level-file=off --pg1-host=pg-primary --pg1-host-user=postgres --pg1-path=/var/lib/postgresql/14/main --pg1-port=5432 --repo1-path=/home/pgbackrest/pg_backup --stanza=prod_backup
+2021-11-07 11:08:19.453 P00   INFO: stanza-create for stanza 'prod_backup' on repo1
+2021-11-07 11:08:19.566 P00   INFO: stanza-create command end: completed successfully (1412ms)
+```
 
 ## Check the Configuration 
 
@@ -233,6 +246,37 @@ compress-level=3
 By default pgBackRest will attempt to perform an incremental backup. However, an incremental backup must be based on a full backup and since no full backup existed pgBackRest ran a full backup instead.
 The type option can be used to specify a full or differential backup.
 While incremental backups can be based on a full or differential backup, differential backups must be based on a full backup. A full backup can be performed by running the backup command with --type=full. 
+
+```bash
+$  sudo -u postgres pgpassword='postgres' pgbackrest --stanza=psqlcluster01-backup --type=full backup
+2024-11-19 16:24:43.603 P00   INFO: backup command begin 2.53.1: --exec-id=720635-9235d0d6 --log-level-console=info --log-level-file=debug --pg1-path=/var/lib/postgresql/17/main --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --repo1-retention-full=2 --stanza=psqlcluster01-backup --type=full
+2024-11-19 16:24:44.342 P00   INFO: execute non-exclusive backup start: backup begins after the next regular checkpoint completes
+2024-11-19 16:24:44.743 P00   INFO: backup start archive = 0000000F0000000000000010, lsn = 0/10000028
+2024-11-19 16:24:44.743 P00   INFO: check archive for prior segment 0000000F000000000000000F
+2024-11-19 16:25:34.819 P00   INFO: execute non-exclusive backup stop and wait for all WAL segments to archive
+2024-11-19 16:25:35.019 P00   INFO: backup stop archive = 0000000F0000000000000010, lsn = 0/10000158
+2024-11-19 16:25:35.075 P00   INFO: check archive for segment(s) 0000000F0000000000000010:0000000F0000000000000010
+2024-11-19 16:25:35.202 P00   INFO: new backup label = 20241119-162444F
+2024-11-19 16:25:35.921 P00   INFO: full backup size = 22.3MB, file total = 974
+2024-11-19 16:25:35.921 P00   INFO: backup command end: completed successfully (52319ms)
+2024-11-19 16:25:35.921 P00   INFO: expire command begin 2.53.1: --exec-id=720635-9235d0d6 --log-level-console=info --log-level-file=debug --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --repo1-retention-full=2 --stanza=psqlcluster01-backup
+2024-11-19 16:25:36.072 P00   INFO: expire command end: completed successfully (151ms)
+```
+
+## Verify Backup 
+
+And finally, confirm the backup is working:
+
+```bash
+sudo -u postgres pgbackrest info
+```
+
+```bash
+sudo -u postgres pgbackrest --stanza=psqlcluster01-backup verify
+2024-10-12 11:29:02.254 P00   INFO: verify command begin 2.50: --exec-id=66076-56e5d74b --log-level-console=info --log-level-file=debug --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/var/lib/pgbackrest --stanza=main
+2024-10-12 11:29:03.649 P00   INFO: verify command end: completed successfully (1404ms)
+
+```
 
 ## Schedule a Backup
 
@@ -894,4 +938,28 @@ sudo -u postgres psql -c " \
  Important Data | 2024-12-16 15:12:27.644922+00
 
 (1 row)
+
+# Configure pgBackRest to Use the Password
+If you've set a password for the postgres user, you need to ensure that pgBackRest is provided with the correct password. This can be done by setting the password in the PGPASSWORD environment variable or by configuring pgBackRest to read from a file.
+
+To set the PGPASSWORD environment variable for the command, you can use:
+
+```bash
+sudo -u postgres PGPASSWORD='your_password' pgbackrest --stanza=psqlcluster01-backup stanza-create
+```
+```bash
+$  sudo -u postgres PGPASSWORD='postgres' pgbackrest --stanza=psqlcluster01-backup stanza-create
+2024-11-19 15:58:47.739 P00   INFO: stanza-create command begin 2.53.1: --exec-id=1088955-6138710b --log-level-console=info --log-level-file=debug --pg1-path=/var/lib/postgresql/17/main --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --stanza=psqlcluster01-backup
+2024-11-19 15:58:48.345 P00   INFO: stanza-create for stanza 'psqlcluster01-backup' on repo1
+2024-11-19 15:58:48.822 P00   INFO: stanza-create command end: completed successfully (1084ms)
+```
+
+Alternatively, you can configure pgBackRest to use a .pgpass file, which contains credentials for PostgreSQL. The .pgpass file should be placed in the home directory of the user running pgBackRest (in this case, the postgres user). The format is:
+
+`hostname:port:database:username:password` 
+
+For example, for local connections, it might look like this:
+
+`*:5432:postgres:postgres:your_password` 
+
 
