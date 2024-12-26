@@ -13,6 +13,12 @@ showMeta: false
 showActions: false
 ---
 
+# Help
+
+```
+:h jumplist
+```
+
 # Split windows
 
 - C-w w switches between 2 open windows.
