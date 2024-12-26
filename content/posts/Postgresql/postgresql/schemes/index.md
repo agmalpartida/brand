@@ -62,3 +62,30 @@ In your `accounting` database, you could have:
 - **Database**: Large-scale organization, contains everything.
 - **Schema**: Subdivision within a database for better structuring of data.
 
+# Tuple
+
+In PostgreSQL, a **tuple** refers to a row of data within a table. It is a term primarily used in the context of relational databases and derives from the relational model, where a tuple represents an instance of a dataset that adheres to the structure defined by the table schema.
+
+For example, if you have a table called `users` with the following columns: `id`, `name`, `email`, a tuple would be a set of values filling these fields, like:
+
+| id | name      | email             |
+|----|-----------|-------------------|
+| 1  | John Doe  | john@example.com  |
+
+In this case, the tuple would be `(1, 'John Doe', 'john@example.com')`.
+
+From a technical perspective in PostgreSQL:
+1. **Tuple in memory**: When PostgreSQL processes data, it uses in-memory structures called tuples to represent rows.
+2. **Tuple on disk**: Tuples are also physically stored in the data pages of the system's files, which make up the tables on disk.
+
+## Key aspects of tuples in PostgreSQL
+
+1. **MVCC (Multi-Version Concurrency Control)**: PostgreSQL manages tuples under the MVCC model, allowing multiple versions of a tuple to exist in the database. This is essential for consistent reads and managing locks during concurrent transactions.
+   
+2. **TID (Tuple Identifier)**: Each tuple has a unique identifier called `TID`, which points to its specific location within a page. This is useful for fast lookups.
+
+3. **Tuple states**: A tuple can have different states (visible, invisible, updated, or deleted) depending on the transaction context.
+
+In summary, a tuple in PostgreSQL is simply a row in a table, but its internal management is optimized to handle data efficiently in a transactional environment.
+
+

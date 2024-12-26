@@ -263,12 +263,83 @@ $  sudo -u postgres pgpassword='postgres' pgbackrest --stanza=psqlcluster01-back
 2024-11-19 16:25:36.072 P00   INFO: expire command end: completed successfully (151ms)
 ```
 
+To start an incremental backup for db-primary, use this command:
+
+```bash
+$  sudo -u postgres PGPASSWORD='postgres' pgbackrest --stanza=psqlcluster01-backup --type=incr backup
+2024-11-19 16:32:08.555 P00   INFO: backup command begin 2.53.1: --exec-id=722479-7021efbf --log-level-console=info --log-level-file=debug --pg1-path=/var/lib/postgresql/17/main --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --repo1-retention-full=2 --stanza=psqlcluster01-backup --type=incr
+2024-11-19 16:32:09.295 P00   INFO: last backup label = 20241119-162444F, version = 2.53.1
+2024-11-19 16:32:09.295 P00   INFO: execute non-exclusive backup start: backup begins after the next regular checkpoint completes
+2024-11-19 16:32:09.696 P00   INFO: backup start archive = 0000000F0000000000000012, lsn = 0/12000028
+2024-11-19 16:32:09.696 P00   INFO: check archive for prior segment 0000000F0000000000000011
+2024-11-19 16:32:10.760 P00   INFO: execute non-exclusive backup stop and wait for all WAL segments to archive
+2024-11-19 16:32:10.961 P00   INFO: backup stop archive = 0000000F0000000000000012, lsn = 0/12000120
+2024-11-19 16:32:11.027 P00   INFO: check archive for segment(s) 0000000F0000000000000012:0000000F0000000000000012
+2024-11-19 16:32:11.122 P00   INFO: new backup label = 20241119-162444F_20241119-163209I
+2024-11-19 16:32:11.827 P00   INFO: incr backup size = 8.3KB, file total = 974
+2024-11-19 16:32:11.827 P00   INFO: backup command end: completed successfully (3273ms)
+2024-11-19 16:32:11.827 P00   INFO: expire command begin 2.53.1: --exec-id=722479-7021efbf --log-level-console=info --log-level-file=debug --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --repo1-retention-full=2 --stanza=psqlcluster01-backup
+2024-11-19 16:32:11.943 P00   INFO: expire command end: completed successfully (116ms)
+```
+
+To view a list of all backups available of db-primary, use this command:
+
+```bash
+sudo -u postgres pgbackrest --stanza=psqlcluster01-backup info
+```
+
+## Deleting old backups manually
+
+To keep only the last full backup:
+
+```bash
+sudo -u postgres pgbackrest --stanza=db-primary --repo1-retention-full=1 expire
+```
+
+To keep only the last differential backup:
+
+```bash
+sudo -u postgres pgbackrest --stanza=db-primary --repo1-retention-diff=1 expire
+```
+
 ## Verify Backup 
 
 And finally, confirm the backup is working:
 
 ```bash
-sudo -u postgres pgbackrest info
+$  sudo -u postgres pgbackrest --stanza=psqlcluster01-backup info
+stanza: psqlcluster01-backup
+    status: ok
+    cipher: aes-256-cbc
+
+    db (current)
+        wal archive min/max (17): 0000000E0000000000000006/0000001D00000001000000B7
+
+        full backup: 20241007-150357F
+            timestamp start/stop: 2024-10-07 15:03:57+00 / 2024-10-07 15:04:02+00
+            wal start/stop: 0000000E0000000000000006 / 0000000E0000000000000006
+            database size: 86.9MB, database backup size: 86.9MB
+            repo1: backup set size: 4.1MB, backup size: 4.1MB
+
+        full backup: 20241009-154952F
+            timestamp start/stop: 2024-10-09 15:49:52+00 / 2024-10-09 15:52:48+00
+            wal start/stop: 0000001D00000001000000B0 / 0000001D00000001000000B0
+            database size: 3.7GB, database backup size: 3.7GB
+            repo1: backup set size: 1GB, backup size: 1GB
+
+        diff backup: 20241009-154952F_20241009-161331D
+            timestamp start/stop: 2024-10-09 16:13:31+00 / 2024-10-09 16:13:33+00
+            wal start/stop: 0000001D00000001000000B2 / 0000001D00000001000000B3
+            database size: 3.7GB, database backup size: 8.3KB
+            repo1: backup set size: 1GB, backup size: 464B
+            backup reference list: 20241009-154952F
+
+        diff backup: 20241009-154952F_20241009-230002D
+            timestamp start/stop: 2024-10-09 23:00:02+00 / 2024-10-09 23:00:03+00
+            wal start/stop: 0000001D00000001000000B5 / 0000001D00000001000000B6
+            database size: 3.7GB, database backup size: 8.3KB
+            repo1: backup set size: 1GB, backup size: 464B
+            backup reference list: 20241009-154952F
 ```
 
 ```bash
