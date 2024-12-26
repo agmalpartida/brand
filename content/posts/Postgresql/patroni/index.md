@@ -386,6 +386,13 @@ To force the replicas to align their TL with the leader, you can perform a switc
 $ patronictl -c /etc/patroni/config.yml switchover
 ```
 
+Timeline inconsistency can arise due to several reasons:
+
+- Incorrect timeline history: If you are restoring from a backup, the timeline history file might be outdated or incorrect.
+- Mismatched WAL files: WAL files from different timelines might have been mixed together, leading to an inconsistency during recovery.
+- Misconfigured replication setup: If this is a standby server or a replication setup, the WAL segments received might be from different timelines due to failovers or switchover events.
+
+
 ## Lag in MB
 
 Definition:

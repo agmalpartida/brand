@@ -15,6 +15,12 @@ showActions: false
 
 # Configuration
 
+It is possible to check if the configuration values have been correctly applied to the database by running the following command:
+
+```sql
+SELECT name,setting,context,source FROM pg_settings WHERE NAME IN ('listen_addresses','archive_mode','password_encryption');
+```
+
 ```sql
 SHOW log_directory;
 SHOW log_filename;
