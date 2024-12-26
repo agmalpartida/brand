@@ -110,6 +110,9 @@ max_wal_senders = 3
 wal_level = replica
 ```
 
+This configuration option informs PostgreSQL to use pgBackRest to handle the WAL
+segments, pushing them immediately to the archive.
+
 4.2 restart postgres
 
 
@@ -184,13 +187,6 @@ pg1-port = 5432
 Initialize pgBackRest stanza in the remote backup repository node
 
 After the configuration files are set up, it’s now time to initialize the pgBackRest stanza. Run the following command in the remote backup repository node (pg-repo).
-
-```
-$ sudo -u postgres pgbackrest --stanza=prod_backup stanza-create
-2021-11-07 11:08:18.157 P00   INFO: stanza-create command begin 2.36: --exec-id=155883-2277a3e7 --log-level-console=info --log-level-file=off --pg1-host=pg-primary --pg1-host-user=postgres --pg1-path=/var/lib/postgresql/14/main --pg1-port=5432 --repo1-path=/home/pgbackrest/pg_backup --stanza=prod_backup
-2021-11-07 11:08:19.453 P00   INFO: stanza-create for stanza 'prod_backup' on repo1
-2021-11-07 11:08:19.566 P00   INFO: stanza-create command end: completed successfully (1412ms)
-```
 
 Once the stanza is created successfully, you can try out the different use cases for disaster recovery.
 

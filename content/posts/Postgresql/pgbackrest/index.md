@@ -110,13 +110,41 @@ During backups the value supplied to pgBackRest will be compared against the pat
 By default Debian/Ubuntu stores clusters in `/var/lib/postgresql/[version]/[cluster]` so it is easy to determine the correct path for the data directory.
 When creating the `/etc/pgbackrest/pgbackrest.conf` file, the database owner (usually postgres) must be granted read privileges.
 
-pg-primary:/etc/pgbackrest/pgbackrest.conf ⇒  Configure the PostgreSQL cluster data directory
+```bash
+mkdir -p /var/lib/pgbackrest
+chmod 0750 /var/lib/pgbackrest
+chown -R postgres:postgres /var/lib/pgbackrest
+```
+
+- Example:
+
 ```ini
+[global]
+repo1-cipher-pass=RvcooAMdZgwE5T4EzsjHvWE5+sIAKDEGU95APTPalQPfdgjQ8sLakAy3PqIBkogc
+repo1-cipher-type=aes-256-cbc
+repo1-path=/var/lib/pgbackrest
+repo1-retention-full=2
+log-level-console=info
+log-level-file=debug
+
 [demo]
-pg1-path=/var/lib/postgresql/15/demo
+pg1-path=/var/lib/pgsql/15/data
 ```
 
 *Quoting is not supported and whitespace is trimmed from keys and values*. Sections will be merged if they appear more than once.
+
+The [global] section defines the location of backups, logging settings, and encryption settings.
+The [demo] section defines a stanza for the demo backup repository, which we will configure.
+
+Finally, initialize the pgBackRest stanza, which contains the definitions for the location, archiving options, backup settings, and other similar configurations for the PostgreSQL database cluster.
+There is generally one stanza defined for each database cluster that needs to have backups.
+The stanza-create command must be run on the primary host after pgbackrest.conf has been configured.
+
+```bash
+sudo -u postgres pgbackrest --stanza=main stanza-create
+```
+
+
 
 ## Create the Repository 
 
@@ -166,6 +194,11 @@ compress-level=3
 Encryption is always performed client-side even if the repository type (e.g. S3 or other object store) supports encryption.
 It is important to use a long, random passphrase for the cipher key. A good way to generate one is to run: openssl rand -base64 48.
 Once the repository has been configured and the stanza created and checked, the repository encryption settings cannot be changed. 
+
+```bash
+$  openssl rand -base64 48
+RvcooAMdZgwE5T4EzsjHvWE5+sIAKDEGU95APTPalQPfdgjQ8sLakAy3PqIBkogc
+```
 
 ```ini
 [demo]
