@@ -5,9 +5,9 @@ categories:
 - Postgresql
 tags:
 - postgresql
-- connections
 keywords:
 - postgresql
+- connections
 summary: ""
 comments: false
 showMeta: false
