@@ -15,11 +15,47 @@ showMeta: false
 showActions: false
 ---
 
-# Overview
+# PostgreSQL disaster recovery options
+
+**A Disaster Recovery (DR)** solution ensures that a system can be quickly restored to a normal operational state if something unexpected happens. When operating a database, you would back up the data as frequently as possible and have a mechanism to restore that data when needed. Disaster Recovery is often mistaken for high availability (HA), but they are two different concepts altogether:
+
+- High availability ensures guaranteed service levels at all times. This solution involves configuring one or more standby systems to an active database, and the ability to switch seamlessly to that standby when the primary database becomes unavailable, for example, during a power outage or a server crash.
+
+- Disaster Recovery protects the database instance against accidental or malicious data loss or data corruption. Disaster recovery can be achieved by using either the options provided by PostgreSQL, or external extensions.
+
+PostgreSQL offers multiple options for setting up database disaster recovery.
+
+1. pg_dump or the pg_dumpall utilities
+
+This is the basic backup approach. These tools can generate the backup of one or more PostgreSQL databases (either just the structure, or both the structure and data), then restore them through the pg_restore command.
+
+Disadvantages:
+  1. Backup of only one database at a time.
+  2. No incremental backups.
+  3. No point-in-time recovery since the backup is a snapshot in time.
+  4. Performance degradation when the database size is large.
+
+2. File-based backup and restore
+
+  1. Requires stopping PostgreSQL in order to copy the files. This is not practical for most production setups.
+  2. No backup of individual databases or tables.
+
+3. PostgreSQL pg_basebackup
+
+This backup tool is provided by PostgreSQL. It is used to back up data when the database instance is running. pgasebackup makes a binary copy of the database cluster files, while making sure the system is put in and out of backup mode automatically. 
+
+  1. No incremental backups.
+  2. No backup of individual databases or tables.
+
+To achieve a production grade PostgreSQL disaster recovery solution, you need something that can take full or incremental database backups from a running instance, and restore from those backups at any point in time. Percona Distribution for PostgreSQL is supplied with pgBackRest: a reliable, open-source backup and recovery solution for PostgreSQL.
+
+# pgBackRest
 
 [Reference](https://pgbackrest.org/user-guide.html) 
 
-A backup is a consistent copy of a database cluster that can be restored to recover from a hardware failure, to perform Point-In-Time Recovery, or to bring up a new standby.
+pgBackRest is an easy-to-use, open-source solution that can reliably back up even the largest of PostgreSQL databases.
+
+**A backup** is a consistent copy of a database cluster that can be restored to recover from a hardware failure, to perform Point-In-Time Recovery, or to bring up a new standby.
 
 - **Full Backup** : pgBackRest copies the entire contents of the database cluster to the backup. The first backup of the database cluster is always a Full Backup. pgBackRest is always able to restore a full backup directly. The full backup does not depend on any files outside of the full backup for consistency.
 
@@ -27,7 +63,8 @@ A backup is a consistent copy of a database cluster that can be restored to reco
 
 - **Incremental Backup** : pgBackRest copies only those database cluster files that have changed since the last backup (which can be another incremental backup, a differential backup, or a full backup). As an incremental backup only includes those files changed since the prior backup, they are generally much smaller than full or differential backups. As with the differential backup, the incremental backup depends on other backups to be valid to restore the incremental backup. Since the incremental backup includes only those files since the last backup, all prior incremental backups back to the prior differential, the prior differential backup, and the prior full backup must all be valid to perform a restore of the incremental backup. If no differential backup exists then all prior incremental backups back to the prior full backup, which must exist, and the full backup itself must be valid to restore the incremental backup.
 
-- **A restore** is the act of copying a backup to a system where it will be started as a live database cluster. A restore requires the backup files and one or more WAL segments in order to work correctly.
+- **A restore** is the act of copying a backup to a system where it will be started as a live database cluster. A restore requires the backup files and one or more WAL segments in order to work correctly. When it comes to restoring, pgBackRest can do a full or a delta restore.
+A full restore needs an empty PostgreSQL target directory. A delta restore is intelligent enough to recognize already-existing files in the PostgreSQL data directory, and update only the ones the backup contains. 
 
 - **WAL** is the mechanism that PostgreSQL uses to ensure that no committed changes are lost. Transactions are written sequentially to the WAL and a transaction is considered to be committed when those writes are flushed to disk. Afterwards, a background process writes the changes into the main database cluster files (also known as the heap). In the event of a crash, the WAL is replayed to make the database consistent.
 
