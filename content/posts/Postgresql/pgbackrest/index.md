@@ -21,61 +21,65 @@ showActions: false
 
 A backup is a consistent copy of a database cluster that can be restored to recover from a hardware failure, to perform Point-In-Time Recovery, or to bring up a new standby.
 
-Full Backup: pgBackRest copies the entire contents of the database cluster to the backup. The first backup of the database cluster is always a Full Backup. pgBackRest is always able to restore a full backup directly. The full backup does not depend on any files outside of the full backup for consistency.
+- **Full Backup** : pgBackRest copies the entire contents of the database cluster to the backup. The first backup of the database cluster is always a Full Backup. pgBackRest is always able to restore a full backup directly. The full backup does not depend on any files outside of the full backup for consistency.
 
-Differential Backup: pgBackRest copies only those database cluster files that have changed since the last full backup. pgBackRest restores a differential backup by copying all of the files in the chosen differential backup and the appropriate unchanged files from the previous full backup. The advantage of a differential backup is that it requires less disk space than a full backup, however, the differential backup and the full backup must both be valid to restore the differential backup. 
+- **Differential Backup** : pgBackRest copies only those database cluster files that have changed since the last full backup. pgBackRest restores a differential backup by copying all of the files in the chosen differential backup and the appropriate unchanged files from the previous full backup. The advantage of a differential backup is that it requires less disk space than a full backup, however, the differential backup and the full backup must both be valid to restore the differential backup. 
 
-Incremental Backup: pgBackRest copies only those database cluster files that have changed since the last backup (which can be another incremental backup, a differential backup, or a full backup). As an incremental backup only includes those files changed since the prior backup, they are generally much smaller than full or differential backups. As with the differential backup, the incremental backup depends on other backups to be valid to restore the incremental backup. Since the incremental backup includes only those files since the last backup, all prior incremental backups back to the prior differential, the prior differential backup, and the prior full backup must all be valid to perform a restore of the incremental backup. If no differential backup exists then all prior incremental backups back to the prior full backup, which must exist, and the full backup itself must be valid to restore the incremental backup.
+- **Incremental Backup** : pgBackRest copies only those database cluster files that have changed since the last backup (which can be another incremental backup, a differential backup, or a full backup). As an incremental backup only includes those files changed since the prior backup, they are generally much smaller than full or differential backups. As with the differential backup, the incremental backup depends on other backups to be valid to restore the incremental backup. Since the incremental backup includes only those files since the last backup, all prior incremental backups back to the prior differential, the prior differential backup, and the prior full backup must all be valid to perform a restore of the incremental backup. If no differential backup exists then all prior incremental backups back to the prior full backup, which must exist, and the full backup itself must be valid to restore the incremental backup.
 
-A restore is the act of copying a backup to a system where it will be started as a live database cluster. A restore requires the backup files and one or more WAL segments in order to work correctly.
+- **A restore** is the act of copying a backup to a system where it will be started as a live database cluster. A restore requires the backup files and one or more WAL segments in order to work correctly.
 
-WAL is the mechanism that PostgreSQL uses to ensure that no committed changes are lost. Transactions are written sequentially to the WAL and a transaction is considered to be committed when those writes are flushed to disk. Afterwards, a background process writes the changes into the main database cluster files (also known as the heap). In the event of a crash, the WAL is replayed to make the database consistent.
+- **WAL** is the mechanism that PostgreSQL uses to ensure that no committed changes are lost. Transactions are written sequentially to the WAL and a transaction is considered to be committed when those writes are flushed to disk. Afterwards, a background process writes the changes into the main database cluster files (also known as the heap). In the event of a crash, the WAL is replayed to make the database consistent.
 
 WAL is conceptually infinite but in practice is broken up into individual 16MB files called segments. WAL segments follow the naming convention 0000000100000A1E000000FE where the first 8 hexadecimal digits represent the timeline and the next 16 digits are the logical sequence number (LSN).
 
-Encryption is the process of converting data into a format that is unrecognizable unless the appropriate password (also referred to as passphrase) is provided.
+- **Encryption** is the process of converting data into a format that is unrecognizable unless the appropriate password (also referred to as passphrase) is provided.
 
 pgBackRest will encrypt the repository based on a user-provided password, thereby preventing unauthorized access to data stored within the repository.
 
-Commands:
-    annotate        add or modify backup annotation
-    archive-get     get a WAL segment from the archive
-    archive-push    push a WAL segment to the archive
-    backup          backup a database cluster
-    check           check the configuration
-    expire          expire backups that exceed retention
-    help            get help
-    info            retrieve information about backups
-    repo-get        get a file from a repository
-    repo-ls         list files in a repository
-    restore         restore a database cluster
-    server          pgBackRest server
-    server-ping     ping pgBackRest server
-    stanza-create   create the required stanza data
-    stanza-delete   delete a stanza
-    stanza-upgrade  upgrade a stanza
-    start           allow pgBackRest processes to run
-    stop            stop pgBackRest processes from running
-    verify          verify contents of the repository
-    version         get version
+## Commands
+
+- annotate        add or modify backup annotation
+- archive-get     get a WAL segment from the archive
+- archive-push    push a WAL segment to the archive
+- backup          backup a database cluster
+- check           check the configuration
+- expire          expire backups that exceed retention
+- help            get help
+- info            retrieve information about backups
+- repo-get        get a file from a repository
+- repo-ls         list files in a repository
+- restore         restore a database cluster
+- server          pgBackRest server
+- server-ping     ping pgBackRest server
+- stanza-create   create the required stanza data
+- stanza-delete   delete a stanza
+- stanza-upgrade  upgrade a stanza
+- start           allow pgBackRest processes to run
+- stop            stop pgBackRest processes from running
+- verify          verify contents of the repository
+- version         get version
 
 ## Configure Cluster Stanza 
 
-- A stanza is the configuration for a PostgreSQL database cluster that defines where it is located, how it will be backed up, archiving options, etc.
-- Most db servers will only have one PostgreSQL database cluster and therefore one stanza, whereas backup servers will have a stanza for every database cluster that needs to be backed up.
+- **A stanza** is the configuration for a PostgreSQL database cluster that defines where it is located, how it will be backed up, archiving options, etc.
+Most db servers will only have one PostgreSQL database cluster and therefore one stanza, whereas backup servers will have a stanza for every database cluster that needs to be backed up.
 
-- It is tempting to name the stanza after the primary cluster but a better name describes the databases contained in the cluster. Because the stanza name will be used for the primary and all replicas it is more appropriate to choose a name that describes the actual function of the cluster, such as app or dw, rather than the local cluster name, such as main or prod. 
+It is tempting **to name the stanza** after the primary cluster but a better name describes the databases contained in the cluster. Because the stanza name will be used for the primary and all replicas it is more appropriate to choose a name that describes the actual function of the cluster, such as app or dw, rather than the local cluster name, such as main or prod. 
 
-- pgBackRest needs to know where the base data directory for the PostgreSQL cluster is located. 
+pgBackRest needs to know *where the base data directory* for the PostgreSQL cluster is located. 
 The path can be requested from PostgreSQL directly but in a recovery scenario the PostgreSQL process will not be available.
 During backups the value supplied to pgBackRest will be compared against the path that PostgreSQL is running on and they must be equal or the backup will return an error. Make sure that pg-path is exactly equal to data_directory as reported by PostgreSQL. 
- By default Debian/Ubuntu stores clusters in /var/lib/postgresql/[version]/[cluster] so it is easy to determine the correct path for the data directory.
-When creating the /etc/pgbackrest/pgbackrest.conf file, the database owner (usually postgres) must be granted read privileges.
-pg-primary:/etc/pgbackrest/pgbackrest.conf ⇒ Configure the PostgreSQL cluster data directory
+By default Debian/Ubuntu stores clusters in `/var/lib/postgresql/[version]/[cluster]` so it is easy to determine the correct path for the data directory.
+When creating the `/etc/pgbackrest/pgbackrest.conf` file, the database owner (usually postgres) must be granted read privileges.
+
+pg-primary:/etc/pgbackrest/pgbackrest.conf ⇒  Configure the PostgreSQL cluster data directory
+```ini
 [demo]
 pg1-path=/var/lib/postgresql/15/demo
+```
 
-Quoting is not supported and whitespace is trimmed from keys and values. Sections will be merged if they appear more than once.
+*Quoting is not supported and whitespace is trimmed from keys and values*. Sections will be merged if they appear more than once.
 
 ## Create the Repository 
 
