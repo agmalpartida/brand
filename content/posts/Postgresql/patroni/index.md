@@ -37,7 +37,7 @@ Patroni is open source library and does not come with enterprise support, you ne
 - Solution Architecture:
 Here we have used 8 VMs to avoid SPOF and achieve High Availability on Postgres.
 
-![patroni](./images/patroni-architecture.png) 
+![patroni](./assets/patroni-architecture.png) 
 
 Key benefits of Patroni:
 
@@ -53,7 +53,7 @@ Key benefits of Patroni:
 
 The following diagram shows the architecture of a three-node PostgreSQL cluster with a single-leader node.
 
-![](./images/ha-architecture-patroni.png) 
+![](./assets/ha-architecture-patroni.png) 
 
 - Components
 
@@ -131,7 +131,7 @@ There are several native methods for achieving high availability with PostgreSQL
 - streaming replication
 
 
-![](./images/4nines.png) 
+![](./assets/4nines.png) 
 
 # Software & Hardware
 
@@ -157,7 +157,51 @@ Version 9.5 and Above: Patroni seamlessly integrates with PostgreSQL versions 9.
 
 Deploying three PostgreSQL servers instead of two adds an extra layer of protection, safeguarding against multi-node failures and bolstering system reliability.
 
-![patroni](./images/patroni-architecturei2.png) 
+![patroni](./assets/patroni-architecturei2.png) 
+
+## Set up
+
+```bash
+sudo apt-get update -y; sudo apt-get install -y wget gnupg2 lsb-release curl
+```
+
+Install the percona-release repository management tool to subscribe to Percona repositories:
+
+```bash
+wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb
+sudo dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
+sudo apt update
+```
+
+Enable repository:
+Percona provides two repositories for Percona Distribution for PostgreSQL. Percona recommend enabling the Major release repository to timely receive the latest updates. 
+
+```bash
+sudo percona-release setup ppg-17
+```
+
+The meta package enables you to install several components of the distribution in one go.
+
+```bash
+sudo apt install percona-ppg-server-17
+
+psql --version
+sudo systemctl status postgresql.service
+ss -lnt
+```
+
+**An important concept to understand** in a PostgreSQL HA environment like this one is that PostgreSQL should not be started automatically by systemd during the server initialization: we should leave it to Patroni to fully manage it, including the process of starting and stopping the server. Thus, we should disable the service:
+
+```bash
+systemctl disable postgresql
+```
+
+(all nodes) We want to start with a fresh new PostgreSQL setup and let Patroni bootstrap the cluster, so we stop the server and remove the data directory that has been created as part of the PostgreSQL installation:
+
+```bash
+sudo systemctl stop postgresql
+sudo rm -fr /var/lib/postgresql/17/main
+```
 
 # Patroni common operations
 
@@ -271,7 +315,6 @@ It will reinitialize node in the cluster. If you want to reinitialize particular
 ```sh
 patronictl -c /etc/patroni/patroni.yaml reinit <CLUSTER_NAME> <NODE_NAME>
 ```
-
 
 # API
 
@@ -431,7 +474,6 @@ SELECT rolname, rolreplication FROM pg_roles WHERE rolname = 'replicator';
 ```
 
 The rolreplication field should be t (true). If not, recreate the replication role with the appropriate permissions.
-
 
 # Troubleshooting
 ## Logging
