@@ -127,6 +127,22 @@ pgbackrest --stanza=psqlcluster01-backup check
 
 If issues arise, the WAL files may not be available for replicas.
 
+# Archiving:
+
+Maintain a continuous record of write-ahead log (WAL) transactions to enable point-in-time recovery (PITR) or replication.
+
+In PostgreSQL, WAL archiving is enabled by setting the archive_mode parameter to on and defining the archive_command.
+Whenever a WAL file is completed, PostgreSQL transfers it to a specified location (e.g., a disk, NAS, or external storage system).
+
+- Primary Use Cases:
+  - Support for Point-in-Time Recovery (PITR).
+  - Data replication for high availability.
+
+- Features:
+  - It is a continuous and automatic process (as long as the server is running and correctly configured).
+  - Requires additional storage for WAL files.
+  - More granular than a full backup, as it records all transactions.
+
 # Example
 
 ```
