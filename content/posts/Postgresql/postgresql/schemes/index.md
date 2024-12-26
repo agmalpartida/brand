@@ -15,35 +15,64 @@ showActions: false
 
 # Databases and Schemas in PostgreSQL
 
-In PostgreSQL, databases and schemas are different but related concepts used to organize data:
+In PostgreSQL, a "cluster" does not refer to a group of networked servers (as it might in other databases or distributed systems). Instead, a cluster in PostgreSQL refers to a set of databases that share the same data directory, a common configuration, and are managed by a single PostgreSQL server instance.
 
-## 1. Database
+1. Dedicated Data Directory
 
-- The highest level of data organization in PostgreSQL.
-- A database contains all the information, including schemas, tables, indexes, functions, views, and other data objects.
-- Each database in PostgreSQL is independent; data in one database cannot be accessed from another database (unless using specific extensions like `dblink` or `postgres_fdw`).
-- It serves as the main container for all related data objects.
+The cluster is defined by a data directory initialized with initdb. This directory contains:
 
-**Example:**  
-For an accounting application, you could have a database named `accounting` that contains all the data related to your company’s accounting.
+- Configuration files:
+  - postgresql.conf: Main server configuration (port, memory, etc.).
+  - pg_hba.conf: User authentication configuration.
+- Control files:
+  - pg_control: Tracks the cluster's state.
+- Database data:
+  - Subdirectories for each database created within the cluster.
 
----
+2. PostgreSQL Server Instance
 
-## 2. Schema
+A cluster is associated with a PostgreSQL instance.
+This instance manages all the databases within the cluster's directory. Each cluster has its own PostgreSQL server process.
 
-- A level of organization within a database.
-- A schema acts like a folder inside a database and can contain tables, views, functions, indexes, and other objects.
-- Schemas help group objects within a database to keep them organized or separate them by functionality or department.
-- A database can have multiple schemas, and users initially access the default schema named `public` unless another is specified.
-- Object names (e.g., tables) can be repeated across different schemas since each schema has its own namespace.
+3. Multiple Databases
 
-**Example:**  
-In your `accounting` database, you could have:
+A PostgreSQL cluster can contain multiple databases that share:
 
-- A `sales` schema with tables related to sales (e.g., invoices, customers).
-- A `purchases` schema with tables related to purchases (e.g., suppliers, orders).
+- A single system of users/roles.
+- The server's configuration and resources.
 
----
+Example:
+
+```sql
+CREATE DATABASE mydb;
+CREATE DATABASE anotherdb;
+```
+
+4. Isolated Configuration
+
+Each cluster has:
+
+- Its own port (default is 5432, but this can be changed in postgresql.conf).
+- Its own memory, connection, and other settings defined in postgresql.conf.
+
+This means you can run multiple PostgreSQL clusters on the same physical server, as long as they use different ports.
+
+5. Independent Processes
+
+Each cluster has its own set of PostgreSQL server processes:
+
+- One main process (postmaster).
+- Additional subprocesses to handle connections, queries, and background tasks.
+
+This ensures that clusters are completely independent of each other.
+
+6. Scalability
+
+Although a PostgreSQL cluster is not inherently distributed, you can configure:
+
+- Replication: Hot standby or streaming replication to create replicas.
+- Sharding: Using external tools like pgpool-II or Citus.
+
 
 ## Key Differences Between Databases and Schemas
 
