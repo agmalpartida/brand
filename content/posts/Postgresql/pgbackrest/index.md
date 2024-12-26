@@ -74,26 +74,6 @@ WAL is conceptually infinite but in practice is broken up into individual 16MB f
 
 pgBackRest will encrypt the repository based on a user-provided password, thereby preventing unauthorized access to data stored within the repository.
 
-## Architecture 
-
-We will use a three server architecture where pgBackRest resides on a dedicated remote host. The servers communicate with each other via passwordless SSH.
-
-The following diagram illustrates the architecture layout:
-
-![](./assets/DR-architecture.png) 
-
-Components:
-
-The architecture consists of three server instances:
-
-1. pg-primary hosts the primary PostgreSQL server. Note that “primary” here means the main database instance and does not refer to the primary node of a PostgreSQL replication cluster or a HA setup.
-
-2. pg-repo is the remote backup repository and hosts pgBackRest. It’s important to host the backup repository on a physically separate instance, to be accessed when the target goes down.
-
-3. pg-secondary is the secondary PostgreSQL node. Don’t confuse it with a hot standby. “Secondary” in this context means a PostgreSQL instance that’s idle. We will restore the database backup to this instance when the primary PostgreSQL instance goes down.
-
-__Note: When you are using a high-availability setup, It's recommend configuring pgBackRest to back up the hot standby server so the primary node is not unnecessarily loaded.__
-
 ## Commands
 
 - annotate        add or modify backup annotation
