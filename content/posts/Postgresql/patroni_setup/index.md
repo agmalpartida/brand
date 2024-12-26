@@ -479,9 +479,11 @@ nc -zv 10.201.217.181 2379
 
 # HAProxy: Install load balancer
 
+[Reference](https://patroni.readthedocs.io/en/latest/rest_api.html#health-check-endpoints) 
+
+A common implementation of high availability in a PostgreSQL environment makes use of a proxy: instead of connecting directly to the database server, the application will be connecting to the proxy instead, which will forward the request to PostgreSQL. When HAproxy is used for this, it is also possible to route read requests to one or more replicas, for load balancing. However, this is not a transparent process: the application needs to be aware of this and split read-only from read-write traffic itself. With HAproxy, this is done by providing two different ports for the application to connect.
+
 After this we need to setup load balancer to point it to active (Leader) Postgres database. For this you need two HAProxy servers or if you are setting this on cloud you can use load balancers provided by cloud provider.
-
-
 
 1. Install HAProxy on both servers:
 
@@ -519,6 +521,9 @@ listen boorvar_cluster
 ```
 
 **Note** : Haproxy will check 8008 port of pgdb servers and if it returns 200 status then it will redirect all traffic to the leader. This 8008 port is configured in Patroni.
+
+Note there are two sections: primary, using port 5000, and standbys, using port 5001. All three nodes are included in both sections: that’s because they are all potential candidates to be either primary or secondary. For HAproxy to know which role each node currently has, it will send an HTTP request to port 8008 of the node: Patroni will answer. Patroni provides a built-in REST API support for health check monitoring that integrates perfectly with HAproxy for this:
+
 
 3. Start haproxy on both nodes
 
