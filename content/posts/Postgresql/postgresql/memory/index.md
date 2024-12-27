@@ -31,6 +31,24 @@ SHOW work_mem;
 ALTER SYSTEM SET work_mem = '64MB';
 ```
 
+- maintenance_work_mem: This is used for tasks such as index rebuilding and VACUUM. With 128 GB of RAM, an initial value could be:
+
+```sql
+ALTER SYSTEM SET maintenance_work_mem = '2GB';
+```
+
+- effective_cache_size: This is an estimate of how much of the operating system’s memory will be used for caching data. It does not allocate memory but informs the query planner. With 128 GB of RAM:
+
+```sql
+ALTER SYSTEM SET effective_cache_size = '96GB';
+```
+- autovacuum: Configure autovacuum to ensure that tables remain healthy. Adjust autovacuum_work_mem if the tables are large.
+
+```
+postgresql:
+  parameters:
+    autovacuum_work_mem: '1GB'
+```
 
 # Checking
 
