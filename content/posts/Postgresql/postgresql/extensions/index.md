@@ -93,5 +93,60 @@ When a bucket lifetime expires, pg_stat_monitor resets all statistics and writes
 
 **Important**: The contents of the bucket will be overwritten. In order not to lose the data, make sure to read the bucket before pg_stat_monitor starts writing new data to it.
 
+### Install from sources
 
+[Github](https://github.com/percona/pg_stat_monitor) 
 
+```bash
+apt update
+apt install percona-postgresql-server-dev-all gcc make
+```
+
+The pg_stat_monitor package is not available in PostgreSQL’s default repositories, so you will need to install it from its source code. 
+Use PGXS (PostgreSQL Extension Building Infrastructure) to compile the module. Some projects, like pg_stat_monitor, support this approach.
+
+```bash
+git clone https://github.com/percona/pg_stat_monitor.git
+cd pg_stat_monitor
+
+make clean USE_PGXS=1
+make USE_PGXS=1
+make install USE_PGXS=1
+```
+
+If you need to use the pg_stat_statements extension instead.
+Set or change the value for shared_preload_library in your postgresql.conf file:
+
+```
+shared_preload_libraries = 'pg_stat_monitor'
+```
+
+Set up configuration values in your postgresql.conf file:
+
+```
+pg_stat_monitor.pgsm_query_max_len = 2048
+```
+
+In a psql session, run the following command to create the view where you can access the collected statistics. We recommend that you create the extension for the postgres database so that you can receive access to statistics from each database.
+
+```bash
+sudo -u postgres psql 
+\c <db_name>
+```
+
+```sql
+CREATE EXTENSION pg_stat_monitor;
+```
+
+Verify:
+
+```sql
+SELECT * FROM pg_stat_monitor_version();
+SELECT * FROM pg_stat_monitor();
+```
+
+Functions:
+
+- pg_stat_monitor_internal(): Although pg_stat_monitor_internal() is an internal function, the main function for retrieving statistics, which replaces the old pg_stat_monitor_settings() or other functions, is pg_stat_monitor().
+
+- pg_stat_monitor_reset(): Resets the statistics collected by pg_stat_monitor. If you want to clear the statistics, you can use this function:
