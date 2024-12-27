@@ -121,6 +121,9 @@ Set or change the value for shared_preload_library in your postgresql.conf file:
 shared_preload_libraries = 'pg_stat_monitor'
 ```
 
+This is important because if the extension is not pre-loaded, some statistics will not be collected correctly.
+These parameters are important for the proper functioning of pg_stat_monitor. You can also adjust other parameters according to your needs. The pg_stat_monitor.pgsm_query_max_len option determines the maximum length of queries that are tracked, and pg_stat_monitor.pgsm_track can be set to ‘all’, ‘top’, or ‘none’ depending on what you want to track.
+
 Set up configuration values in your postgresql.conf file:
 
 ```
