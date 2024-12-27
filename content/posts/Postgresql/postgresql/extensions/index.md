@@ -186,7 +186,7 @@ WHERE query IS NOT NULL
 ORDER BY total_exec_time DESC;
 ```
 
-# Remove Extension pg_stat_monitor
+## Remove Extension pg_stat_monitor
 
 Verify if the extension is installed:
 
@@ -222,5 +222,50 @@ If you find the related files, delete them:
 
 ```bash
 sudo rm /usr/share/postgresql/<version>/extension/pg_stat_monitor*
+```
+
+## Example pg_stat_monitor
+
+https://www.percona.com/blog/pg_stat_monitor-a-new-way-of-looking-at-postgresql-metrics/
+https://www.percona.com/blog/improve-postgresql-query-performance-insights-with-pg_stat_monitor/
+
+For example, to view the IP address of the client application that made the query, run the following command:
+
+```sql
+SELECT DISTINCT userid::regrole, pg_stat_monitor.datname, substr(query,0, 50) AS query, calls, bucket, bucket_start_time, queryid, client_ip
+FROM pg_stat_monitor, pg_database
+WHERE pg_database.oid = oid;
+```
+
+- Changing the configuration
+
+Run the following query to list available configuration parameters.
+
+```sql
+SELECT name, short_desc FROM pg_settings WHERE name LIKE '%pg_stat_monitor%';
+```
+
+You can change a parameter by setting a new value in the configuration file. Some parameters require server restart to apply a new value. For others, configuration reload is enough.
+
+https://docs.percona.com/pg-stat-monitor/configuration.html
+
+As an example, let’s set the bucket lifetime from default 60 seconds to 40 seconds. Use the ALTER SYSTEM command:
+
+```sql
+ALTER SYSTEM set pg_stat_monitor.pgsm_bucket_time = 40;
+```
+
+Restart the server to apply the change.
+
+Verify the updated parameter:
+
+```sql
+SELECT name, setting 
+FROM pg_settings 
+WHERE name = 'pg_stat_monitor.pgsm_bucket_time';
+
+                 name               | setting
+  ----------------------------------+---------
+   pg_stat_monitor.pgsm_bucket_time |   40
 ```
 
