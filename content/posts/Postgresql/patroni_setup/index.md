@@ -46,6 +46,8 @@ sysctl -p
 
 # ETCD Installation and Configuration
 
+Etcd is a fault-tolerant, distributed key-value store used to store the state of the Postgres cluster. Using Patroni, all of the Postgres nodes make use of etcd to keep the Postgres cluster up and running. In production, it makes sense to use a larger etcd cluster so that if one etcd node fails, it doesn’t affect Postgres servers.
+
 `wget https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz` 
 
 Once downloaded unzip and copy binaries to your /usr/bin

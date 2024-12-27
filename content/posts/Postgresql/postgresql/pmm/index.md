@@ -90,7 +90,7 @@ apt install -y pmm2-client
 ## Register PMM Client:
 
 ```bash
-pmm-admin config --server-insecure-tls --server-url=https://admin:admin@172.20.20.200:443
+pmm-admin config --server-insecure-tls --server-url=https://admin:admin@172.20.20.200:443 --force
 ```
 
 ## HAProxy
@@ -165,6 +165,34 @@ pmm-admin add postgresql --username=postgres --password=postgres --host=10.201.2
 sudo pmm-admin add postgresql --username=postgres --password=<contraseña> --host=localhost --port=5432 --query-source=pgstatstatements
 ```
 
+# Patroni: Adding the Patroni metrics to PMM
+
+Since version 2.1.0, Patroni exposes metrics in a Prometheus-compatible way via the /metrics endpoint:
+
+This means that we can instantly benefit from them by using the PMM External Exporters feature:
+
+https://docs.percona.com/percona-monitoring-and-management/setting-up/client/external.html
+
+In a nutshell, we just need to run the following in each client node:
+
+```bash
+pmm-admin add external --listen-port=8008 --service-name=pg-nodeX-patroni
+```
+
+Where -–service-name can be whatever naming scheme you want that lets you easily know which Patroni node it refers to.
+
+After running these commands and waiting some seconds, we should see metrics incoming in the Advanced Data Exploration dashboard, like the patroni_primary one.
+
+In the headers, we can see information about a node in particular (the one selected in the service_name drop-down list):
+
+Patroni information like version, communication with the DCS, if it’s the current leader, etc.
+PostgreSQL information like version, if it’s running, its timeline number, etc.
+
+Then we have the Patroni section, with graphs showing which were the Patroni primary and replica nodes at any time.
+
+Finally, we have a PostgreSQL section, with graphs showing which were the PostgreSQL primary and replica nodes at any time and information on WAL generation and application.
+
+
 # Troubleshooting
 
 ```bash
@@ -208,4 +236,60 @@ systemctl status pmm-agent
 journalctl -u pmm-agent
 
 sudo pmm-admin check-network
+```
+
+# SMTP
+
+## SMTP
+
+[Reference](https://docs.percona.com/percona-monitoring-and-management/get-started/alerting.html#configure-email-smtp-server-settings) 
+
+SMTP settings can be found inside the container of pmm-server. Connect to the container as below:
+
+```bash
+docker ps
+CONTAINER ID   IMAGE                  COMMAND                CREATED          STATUS                    PORTS                                           NAMES
+acc4046ec4ba   percona/pmm-server:2   "/opt/entrypoint.sh"   36 minutes ago   Up 36 minutes (healthy)   80/tcp, 0.0.0.0:443->443/tcp, :::443->443/tcp   pmm-server
+
+docker exec -it pmm-server bash
+
+[root@acc4046ec4ba opt] # cd /etc/grafana/
+[root@acc4046ec4ba grafana] # ls
+grafana.ini  ldap.toml
+
+enabled=true
+host=smtp.gmail.com:587
+user=<user@email-id>
+password=<app-password>
+skip_verify=false
+from_address=<from-address@mail-id>
+from_name=<Name of the alert, could be any>
+```
+
+Once, done, restart the PMM-Server container with:
+
+```bash
+docker restart pmm-server
+```
+
+- Configure Email (SMTP) server settings
+
+To use SMTP with a PMM Docker installation:
+
+Create an .env file and populate it with your SMTP credentials (and other environment variables) as follows: 
+
+```
+GF_SMTP_ENABLED=true  
+GF_SMTP_HOST=smtp.gmail.com:587
+GF_SMTP_USER=email@domain.com
+GF_SMTP_PASSWORD=<YOUR_SMTP_PASSWORD>
+GF_SMTP_SKIP_VERIFY=false
+GF_SMTP_FROM_ADDRESS=email@domain.com
+GF_SMTP_FROM_NAME=Percona Alerting
+```
+
+Pass in the .env file to Docker run using the --env-file flag:
+
+```bash
+docker run --env-file=.env -p 443:443 -p 80:80 percona/pmm-server:2
 ```
