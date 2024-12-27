@@ -46,7 +46,29 @@ sysctl -p
 
 # ETCD Installation and Configuration
 
+[Reference](https://github.com/etcd-io/etcd) 
+
 Etcd is a fault-tolerant, distributed key-value store used to store the state of the Postgres cluster. Using Patroni, all of the Postgres nodes make use of etcd to keep the Postgres cluster up and running. In production, it makes sense to use a larger etcd cluster so that if one etcd node fails, it doesn’t affect Postgres servers.
+
+To form a cluster, etcd require a minimum 3 etcd nodes for to have high availability. An etcd cluster needs a majority a quorum, to agree on updates to the cluster state. For a cluster with n nodes, quorum is (n/2)+1.
+3 nodes etcd can handle 1 node failure, 5 nodes etcd can handle 2 node failure, and so on. A 5 nodes etcd cluster can tolerate 2 nodes failures, which is enough in most cases. Although larger clusters provide better fault tolerance, the write performance will suffers because data must be replicated across more machines.
+
+Prerequisite:
+
+```
+Minimum of 3 servers
+Firewall open on port 2379 and 2380
+
+       ____________              ____________
+      |            |            |            |
+      |   etcd 1   |------------|   etcd 2   |
+      |____________|     |      |____________|
+                         |
+                    _____|______
+                   |            |
+                   |   etcd 3   |
+                   |____________|
+```
 
 `wget https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz` 
 
@@ -139,7 +161,77 @@ etcdctl endpoint status --write-out=table --endpoints=etcd1:2379,etcd2:2379,etcd
 
 **Note** : By default etcd does not support v2 API, in case patroni fails to start with the api error, add --enable-v2 flag in etcd service
 
+6. Configuration
+
+`/etc/etcd/etcd.conf` 
+
+`ETCD_INITIAL_CLUSTER_STATE="new"` 
+
+For new nodes that have not yet been added to the cluster, this value may be “new” during the initial setup, but once the node successfully joins, this value should be changed to “existing”.
+
+In the configuration file (/etc/etcd/etcd.conf or similar), make sure that:
+Nodes that are already part of the cluster have ETCD_INITIAL_CLUSTER_STATE set to “existing”.
+
+Verify that all nodes have the same configuration for ETCD_INITIAL_CLUSTER and ETCD_INITIAL_CLUSTER_STATE.
+
+It is necessary to initialize the etcd cluster from one of the nodes and we did that from node1 using the following configuration file:
+
+```
+ETCD_NAME=node1
+ETCD_DATA_DIR="/var/lib/etcd/postgresql"
+ETCD_INITIAL_CLUSTER="node1=http://10.201.217.181:2380,node2=http://10.201.217.182:2380,node3=http://10.201.217.183:2380"
+ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://10.201.217.181:2380
+ETCD_ADVERTISE_CLIENT_URLS=http://10.201.217.181:2379
+ETCD_LISTEN_PEER_URLS=http://10.201.217.181:2380
+ETCD_LISTEN_CLIENT_URLS=http://10.201.217.181:2379,http://127.0.0.1:2379
+```
+
+We then restarted the service:
+
+```bash
+systemctl restart etcd
+```
+
+We can then move on to install etcd on node2. The configuration file follows the same structure as that of node1, except that we are adding node2 to an existing cluster so we should indicate the other node(s)
+
+Before we restart the service, we need to formally add node2 to the etcd cluster by running the following command on node1:
+
+```bash
+etcdctl member add node2 http://10.201.217.182:2380
+```
+
+```bash
+ETCDCTL_API=3 etcdctl endpoint status \
+    --endpoints=http://10.201.217.181:2379,http://10.201.217.182:2379,http://10.201.217.183:2379 \
+    --write-out=table
+
++----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|          ENDPOINT          |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| http://10.201.217.181:2379 | c62a62b5d410be14 |  3.5.16 |   20 kB |      true |      false |         8 |         23 |                 23 |        |
+| http://10.201.217.182:2379 | c7e57c04ee418bff |  3.5.16 |   20 kB |     false |      false |         8 |         23 |                 23 |        |
+| http://10.201.217.183:2379 | 29ed4527ec2e0fef |  3.5.16 |   20 kB |     false |      false |         8 |         23 |                 23 |        |
++----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+```
+
+
 ## Troubleshooting
+
+- Logs
+
+```bash
+journalctl -xeu etcd.service -l --no-pager -f
+```
+
+- To obtain the Cluster ID, we need to view the output as “json”.
+
+```bash
+ETCDCTL_API=3 etcdctl endpoint status \
+    --endpoints=http://10.201.217.181:2379,http://10.201.217.182:2379,http://10.201.217.183:2379 \
+    --write-out=json | jq
+```
 
 - Check connection to etcd:
 
