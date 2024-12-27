@@ -143,6 +143,7 @@ Verify:
 ```sql
 SELECT * FROM pg_stat_monitor_version();
 SELECT * FROM pg_stat_monitor();
+SHOW shared_preload_libraries;
 ```
 
 Functions:
@@ -150,3 +151,76 @@ Functions:
 - pg_stat_monitor_internal(): Although pg_stat_monitor_internal() is an internal function, the main function for retrieving statistics, which replaces the old pg_stat_monitor_settings() or other functions, is pg_stat_monitor().
 
 - pg_stat_monitor_reset(): Resets the statistics collected by pg_stat_monitor. If you want to clear the statistics, you can use this function:
+
+```sql
+SELECT * FROM pg_stat_monitor_reset();
+```
+
+To list all installed extensions in PostgreSQL, you can use the following query:
+
+```sql
+SELECT * FROM pg_extension;
+SELECT * FROM pg_available_extensions WHERE name = 'pg_stat_monitor';
+```
+
+To list all functions related to pg_stat_monitor in PostgreSQL, you can use the following query:
+
+```sql
+SELECT proname 
+FROM pg_proc 
+WHERE proname LIKE '%pg_stat_monitor%';
+```
+
+Check the version of pg_stat_monitor.
+
+```sql
+SELECT default_version FROM pg_available_extensions WHERE name = 'pg_stat_monitor';
+```
+
+Example of a query with pg_stat_monitor.
+
+```sql
+SELECT bucket, query, calls, total_exec_time, rows
+FROM pg_stat_monitor
+WHERE query IS NOT NULL
+ORDER BY total_exec_time DESC;
+```
+
+# Remove Extension pg_stat_monitor
+
+Verify if the extension is installed:
+
+```sql
+SELECT * FROM pg_extension WHERE extname = 'pg_stat_monitor';
+```
+
+Uninstall the extension from the database:
+
+```sql
+DROP EXTENSION pg_stat_monitor;
+```
+
+If the extension depends on other configurations or tables, use CASCADE to force the removal:
+
+```sql
+DROP EXTENSION pg_stat_monitor CASCADE;
+```
+
+This will remove the extension and all associated objects.
+
+-Remove the extension files from the server
+
+Even after removing the extension from the database, the extension files may remain on the file system.
+
+Locate the pg_stat_monitor files. They are usually in the PostgreSQL extensions directory:
+
+```bash
+ls /usr/share/postgresql/<version>/extension/ | grep pg_stat_monitor
+```
+
+If you find the related files, delete them:
+
+```bash
+sudo rm /usr/share/postgresql/<version>/extension/pg_stat_monitor*
+```
+
