@@ -314,8 +314,6 @@ Remove nofailover tag:
 curl -XPATCH -d '{"tags": {"nofailover": false}}' http://127.0.0.1:8008/config
 ```
 
-
-
 # Postgres Set up
 
 ```bash
@@ -403,49 +401,59 @@ chmod 777 /etc/patroni/logs
 `touch /etc/patroni/patroni.yml` 
 
 ```sh
-scope: bootvar_cluster
-name: pgdb1
+scope: psqlcluster01
+name: psql01
 
 log:
   traceback_level: INFO
   level: INFO
-  dir: /etc/patroni/logs/
+  dir: /var/log/patroni
   file_num: 5
 
 restapi:
   listen: 0.0.0.0:8008
-  connect_address: 192.168.56.201:8008
+  connect_address: psql01:8008
 
-etcd:
+etcd3:
   protocol: http
-  hosts: 192.168.56.201:2379,192.168.56.203:2379,192.168.56.203:2379
+  hosts: 172.20.20.211:2379,172.20.20.212:2379,172.20.20.213:2379
 
 bootstrap:
   dcs:
     ttl: 30
     loop_wait: 10
-    retry_timeout : 10
+    retry_timeout: 10
     maximum_lag_on_failover: 1048576
     postgresql:
       use_pg_rewind: true
       use_slots: true
       parameters:
-        wal_keep_segments: 100
-        #add other postgres DB parameters to start with
+        wal_level: replica
+        hot_standby: "on"
+        logging_collector: 'on'
+        max_wal_senders: 5
+        max_replication_slots: 5
+        wal_log_hints: "on"
 
-  initdb:
-  - encoding: UTF8
-  - data-checksums
+  initdb:  # Needs to be a list
+    - encoding: UTF8
+    - locale: en_US.UTF-8
+    - data-checksums
 
-  pg_hba:
-  - host replication replicator 0.0.0.0/0 md5
-  - host all all 0.0.0.0/0 md5
+  pg_hba:  # Add to pg_hba.conf after running 'initdb'
+    - host replication replicator 172.20.20.211/32 md5
+    - host replication replicator 127.0.0.1/32 trust
+    - host all all 172.20.20.211/32 md5
+    - host all all 0.0.0.0/0 md5
+
+  post_bootstrap: /etc/patroni/post_bootstrap.sh
 
 postgresql:
-  listen: 192.168.56.204:5432
-  connect_address: 192.168.56.204:5432
-  data_dir: /var/lib/pgsql/bootvar/pgdb1/data
-  bin_dir: /usr/pgsql-12/bin
+  listen: 0.0.0.0:5432
+  connect_address: psql01:5432
+  data_dir: "/var/lib/postgresql/17/main"
+  bin_dir: "/usr/lib/postgresql/17/bin"
+  pgpass: /tmp/pgpass0
   authentication:
     replication:
       username: replicator
@@ -453,6 +461,19 @@ postgresql:
     superuser:
       username: postgres
       password: postgres
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+
+watchdog:
+  mode: required  # Allowed values: off, automatic, required
+  device: /dev/watchdog
+  safety_margin: 5
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false
 ```
 
 In the bootstrap section of your Patroni configuration, Patroni automatically creates the users defined under the users key when initializing the PostgreSQL cluster. You do not need to create these users manually before starting PostgreSQL; Patroni will handle it when the cluster starts.
