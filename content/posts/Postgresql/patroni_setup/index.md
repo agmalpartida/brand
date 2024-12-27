@@ -216,8 +216,71 @@ ETCDCTL_API=3 etcdctl endpoint status \
 +----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
 ```
 
+## Concepts
+
+- IS LEARNER: This column indicates whether the member is a “learner”. A learner node is a member of the cluster that can only replicate data, but cannot vote in Raft consensus decisions. This is useful for adding new nodes to the cluster without affecting the consensus.
+Example: false means the node is a full voting member of the cluster. true would indicate that it is a learner.
+
+## OPS
+
+```bash
+curl http://<etcdnode_ip>:2380/members
+```
+
+- List key
+
+```bash
+etcdctl --endpoints=http://10.201.217.181:2379 get / --prefix
+etcdctl ls /service --recursive
+```
+
+- Remove key
+
+```bash
+etcdctl --endpoints=http://10.201.217.181:2379 get / --prefix
+etcdctl --endpoints=http://10.201.217.181:2379 del /service/psqltest_cluster/members/psqltest01.fullstep.cloud --recursive
+```
+
+- Status
+
+```bash
+curl http://172.20.20.211:2379/health
+etcdctl --endpoints=http://172.20.20.211:2379,http://172.20.20.212:2379,http://172.20.20.213:2379 endpoint status
+etcdctl --endpoints=http://172.20.20.211:2379,http://172.20.20.212:2379,http://172.20.20.213:2379 endpoint health
+```
+
+- patroni
+
+```bash
+etcdctl --endpoints=http://172.20.20.211:2379,http://172.20.20.212:2379,http://172.20.20.213:2379 get /service/patroni/leader
+etcdctl --endpoints=http://172.20.20.211:2379,http://172.20.20.212:2379,http://172.20.20.213:2379 lease list
+etcdctl --endpoints=http://172.20.20.211:2379,http://172.20.20.212:2379,http://172.20.20.213:2379 lease revoke 72689339f34030a9
+
+$  etcdctl --endpoints=http://10.201.217.181:2379 get / --prefix
+/service/psqltest_cluster/config
+{"loop_wait":2,"retry_timeout":14,"ttl":30}
+/service/psqltest_cluster/initialize
+7422315883286207519
+```
+
+- Patroni, initialize cluster
+
+```bash
+$  etcdctl --endpoints=http://10.201.217.181:2379 del /service/psqltest_cluster/initialize
+1
+```
+
+- Force leader election
+
+```bash
+etcdctl election campaign /path/to/election-key
+etcdctl --endpoints=http://10.201.217.181:2379 get /psqltest_cluster/leader
+```
 
 ## Troubleshooting
+
+- The “cluster ID mismatch” error occurs because the nodes have different cluster IDs, meaning they are not in the same cluster. To resolve this, make sure the nodes are configured correctly, delete old data if necessary, and verify that all nodes share the same cluster ID.
+Verify the cluster ID. Ensure that all nodes belong to the same cluster by checking the cluster ID on all nodes.
 
 - Logs
 
@@ -250,6 +313,8 @@ Remove nofailover tag:
 ```sh
 curl -XPATCH -d '{"tags": {"nofailover": false}}' http://127.0.0.1:8008/config
 ```
+
+
 
 # Postgres Set up
 
