@@ -400,6 +400,8 @@ chmod 777 /etc/patroni/logs
 
 `touch /etc/patroni/patroni.yml` 
 
+NOTE: Config to fresh install
+
 ```sh
 scope: psqlcluster01
 name: psql01
@@ -542,12 +544,12 @@ Or directly over patroni configuration file:
 ```yaml
 users:  
   admin:  
-    password: V/$QjLxf2022.-  
+    password: admin
     options:  
       - createrole  
       - createdb  
   replicator:  
-    password: fxN^vruL2022.-  
+    password: replicator
     options:  
       - replication  
 ```
@@ -561,7 +563,7 @@ users:
 authentication:  
   replication:  
     username: replicator  
-    password: fxN^vruL2022.-  
+    password: replicator
   superuser:  
     username: postgres  
     password: postgres  
@@ -577,7 +579,7 @@ The credentials are stored at runtime in the pgpass file specified in the Patron
 ```sh
 root@psql01
  ~  $  cat /tmp/pgpass0
-psql02.fullstep.cloud:5432:*:replicator:fxN^vruL2022.-
+psql02.fullstep.cloud:5432:*:replicator:replicator
 ```
 
 5. Start Patroni
