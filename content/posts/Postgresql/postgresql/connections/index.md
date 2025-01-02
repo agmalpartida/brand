@@ -229,11 +229,13 @@ You can prevent users from working on a database by disconnecting it:
 
 - Deny:
 ```sql
+SELECT datname FROM pg_database WHERE datallowconn = false;
 UPDATE pg_database SET datallowconn = false WHERE datname = 'nombre_db';
 ```
 
 - Allow:
 ```sql
+SELECT datname FROM pg_database WHERE datallowconn = true;
 UPDATE pg_database SET datallowconn = true WHERE datname = 'nombre_db';
 ```
 
