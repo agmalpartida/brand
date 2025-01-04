@@ -48,7 +48,14 @@ To verify that the password has been changed successfully, you can check the rol
 SELECT rolname, rolvaliduntil FROM pg_roles WHERE rolname = 'rol_name';
 ```
 
-# Create users
+# Create users (role)
+
+- If not exists
+
+```sql
+CREATE ROLE admin WITH LOGIN PASSWORD 'your_password';
+```
+
 Verify schema-level permissions. If the user has trouble accessing the table due to schema restrictions, you also need to grant permissions on the schema.
 Allow schema access:
 
@@ -119,6 +126,15 @@ SELECT datname FROM pg_database WHERE datdba = (SELECT oid FROM pg_roles WHERE r
 
 # Permissions
 
+- Check permissions Over objects
+List tables and permissions
+
+
+```
+\dt+ 
+\d+ table_name
+```
+
 - Check:
 
 ```sql
@@ -137,5 +153,12 @@ ORDER BY grantee, table_schema, table_name;
 -- full privileges
 GRANT CONNECT, TEMPORARY ON DATABASE db_name TO admin;
 GRANT ALL PRIVILEGES ON DATABASE db_name TO admin;
+```
 
+- Set role-specific permissions (in this case, CTc stands for CREATE, TEMPORARY, and connection privileges):
+If you are using a schema other than the public schema, adjust the statements to reference the appropriate schema.
+
+```sql
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT CREATE ON TABLES TO admin;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT TEMPORARY ON TABLES TO admin;
 ```
