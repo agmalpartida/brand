@@ -117,7 +117,9 @@ SELECT tablename FROM pg_tables WHERE tableowner = 'user_name';
 SELECT datname FROM pg_database WHERE datdba = (SELECT oid FROM pg_roles WHERE rolname = 'user_name');
 ```
 
-# Check permissions
+# Permissions
+
+- Check:
 
 ```sql
 SELECT grantee.rolname AS grantee,
@@ -129,3 +131,11 @@ JOIN pg_roles grantee ON grantee.rolname = role_table_grants.grantee
 ORDER BY grantee, table_schema, table_name;
 ```
 
+- Asign permissions
+
+```sql
+-- full privileges
+GRANT CONNECT, TEMPORARY ON DATABASE db_name TO admin;
+GRANT ALL PRIVILEGES ON DATABASE db_name TO admin;
+
+```
