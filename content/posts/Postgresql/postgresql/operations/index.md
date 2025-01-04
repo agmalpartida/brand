@@ -44,6 +44,17 @@ ORDER BY table_schema,table_name;
 
 # databases
 
+## create db
+
+```sql
+CREATE DATABASE db_name
+WITH OWNER admin
+ENCODING 'UTF8'
+LC_COLLATE 'C.UTF-8'
+LC_CTYPE 'C.UTF-8'
+TEMPLATE template0;
+```
+
 ## list databases
 - psql tool
 
