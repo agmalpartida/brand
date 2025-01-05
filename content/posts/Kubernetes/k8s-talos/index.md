@@ -39,5 +39,20 @@ showActions: false
 4) make sure tpiv4 node is no longer in device mode, it should be host mode for normal operation.
 5) optionally log in to bmc and connect to serial console of the node with minicom.
 
+## Minicom example for node2
+
+```shell
+microcom -s 115200 /dev/ttyS1
+```
+
+## Hardwired bmc serial port connections to nodes
+
+|Node  | bmc device |
+|------|----------|
+|Node 1|/dev/ttyS2|
+|Node 2|/dev/ttyS1|
+|Node 3|/dev/ttyS4|
+|Node 4|/dev/ttyS5|
+
 
 
