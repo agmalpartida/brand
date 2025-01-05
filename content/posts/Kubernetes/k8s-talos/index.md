@@ -58,10 +58,94 @@ microcom -s 115200 /dev/ttyS1
 
 1) boot all the nodes by powering down and up using the bmc
 
+2) Check talos' API port 
+
+```bash
+nc -zv 192.168.1.71 50000
+```
+
 
 ## Create Cluster
 
-nc -zv 192.168.1.71 50000
-talosctl -n node1 get links
+
+### Generate cluster files
+
+1) Generate secrets:
+
+```shell
+talosctl gen secrets -o secrets.yaml
+```
+
+1) Generate control and worker config:
+
+Caveats (according talos [documentation](https://www.talos.dev/v1.9/talos-guides/network/vip/#choose-your-shared-ip)):
+
+Since VIP functionality relies on etcd for elections, the shared IP will not come alive until after you have bootstrapped Kubernetes.
+Don’t use the VIP as the endpoint in the talosconfig, as the VIP is bound to etcd and kube-apiserver health, and you will not be able to recover from a failure of either of those components using Talos API.
+
+```shell
+talosctl gen config --with-secrets secrets.yaml "clustername" https://CONTROL_PLANE_IP:6443
+talosctl gen config --with-secrets secrets.yaml "comanche" https://192.168.1.71:6443
+```
+
+3) Edit controlplane.yaml:
+   
+- set ```controlPlane.scheduler.disabled: false```, I want control plane nodes to schedule work.
+- add the VIP ipadress to network stanza:
+
+      I have:
+      ```
+      network:
+      hostname: node1
+      interfaces:
+         - interface: eth0
+            dhcp: true
+            vip:
+            ip: <VIP>
+      ```
+- set ```install.disk:``` to ```/dev/mmcblk0```
+- optionally set ```install.wipe: true```
+
+4) For each node (I have 3, an uneven number of control nodes is recommended in k8s):
+
+- change hostname: ```network.hostname: nodeX``` (set X to cm4 number)
+1) apply config to cm4:
+
+```shell
+talosctl apply-config --insecure -n <CM4 ipadres> --file controlplane.yaml
+talosctl apply-config --insecure -n 192.168.1.71 --file controlplane-node1.yaml
+talosctl apply-config --insecure -n 192.168.1.72 --file controlplane-node2.yaml
+talosctl apply-config --insecure -n 192.168.1.73 --file controlplane-node3.yaml
+
+[  118.061987] [talos] etcd is waiting to join the cluster, if this node is the first node in the cluster, please run `talosctl bootstrap` against one of the following IPs:
+[  118.080674] [talos] [192.168.1.71]
+   ```
+
+### Bootstrap cluster by one of the control nodes.
+
+```shell
+   talosctl  -n <CM4 ipadres> -e <CM4 ipadres> --talosconfig ./talosconfig bootstrap
+talosctl --talosconfig ~/.talos/talosconfig -n 192.168.1.71 -e 192.168.1.71 bootstrap
+[  259.296059] [talos] bootstrap request received
+
+   ```
+Grab ☕
+
+### Generate kubeconfig.
+
+```shell
+talosctl kubeconfig -f -n <VIP>
+
+unset KUBECONFIG
+talosctl kubeconfig --talosconfig talosconfig -n 192.168.1.71 -e 192.168.1.71
+
+```
+
+### Watch cluster
+
+1) ```watch -n 1.5 kubectl --kubeconfig=./kubeconfig --request-timeout=1s get pods,deployment,services,nodes -A -o wide```
+
+talosctl config nodes 192.168.1.71,192.168.1.72,192.168.1.73 --talosconfig ~/.talos/talosconfig
+talosctl config endpoint 192.168.1.71,192.168.1.72,192.168.1.73 --talosconfig ~/.talos/talosconfig
 
 
