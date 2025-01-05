@@ -54,5 +54,14 @@ microcom -s 115200 /dev/ttyS1
 |Node 3|/dev/ttyS4|
 |Node 4|/dev/ttyS5|
 
+## Boot nodes
+
+1) boot all the nodes by powering down and up using the bmc
+
+
+## Create Cluster
+
+nc -zv 192.168.1.71 50000
+talosctl -n node1 get links
 
 
