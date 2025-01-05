@@ -1,5 +1,5 @@
 ---
-Title: "K8S Talos"
+Title: "Installing talos on a Turing Piv2 board with cm4 modules"
 date: 2025-01-05
 categories:
 - Kubernetes
@@ -8,38 +8,36 @@ tags:
 keywords:
 - k8s
 - talos
-summary: "Kubernetes troubleshooting"
+summary: "Installing talos on a Turing Piv2 board with cm4 modules."
 comments: false
 showMeta: false
 showActions: false
 ---
 
-```sh
-kubectl --v=9 get pods
-```
+# Installing talos on a Turing Piv2 board with cm4 modules.
 
-## Authorization / Authentication
+## Flash image to all nodes
 
-Review the API server logs to get more details about the authentication error. This may provide additional clues as to why the request is failing.
+1) download metal-arm64.raw.xz from https://github.com/siderolabs/talos/releases
 
-Make sure you can reach the Kubernetes API server from your machine:
+2) after putting cm4 in usb mode (use rpi cm4 emmc usb programming stick or use tpiv2, see: https://help.turingpi.com/hc/en-us/articles/8687165986205-Install-OS)
+3) flash talos, this works for sd card and emmc storage. Check the correct device name.
 
-```sh
-curl -k https://<api-server-address>:<port>/healthz
-```
+   ```
+   time xz -d < metal-arm64.raw.xz | sudo dd of=/dev/sda bs=1M status=progress conv=fsync
+   893665280 bytes (894 MB, 852 MiB) copied, 3 s, 298 MB/s1306525696 bytes (1,3 GB, 1,2 GiB) copied, 3,82763 s, 341 MB/s
 
-```sh
-curl -k https://<api-server-address>:<port>/api/v1/namespaces --header "Authorization: Bearer <token>"
-```
+   0+152937 records in
+   0+152937 records out
+   1306525696 bytes (1,3 GB, 1,2 GiB) copied, 99,591 s, 13,1 MB/s
 
-```sh
-kubectl auth can-i --list
-```
+   real	1m39,600s
+   user	0m3,607s
+   sys	0m0,226s
+   ```
 
-```sh
-chmod 600 /path/to/admin.crt /path/to/admin.key /path/to/ca.crt
+4) make sure tpiv4 node is no longer in device mode, it should be host mode for normal operation.
+5) optionally log in to bmc and connect to serial console of the node with minicom.
 
-kubectl config view -o jsonpath='{.users}'
 
-curl --cert /path/to/admin.crt --key /path/to/admin.key --cacert /path/to/ca.crt https://<api-server-address>:<port>/api/v1/namespaces
-```
+
