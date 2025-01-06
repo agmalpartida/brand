@@ -190,3 +190,57 @@ waiting for coredns to report ready: OK
 waiting for all k8s nodes to report schedulable: ...
 waiting for all k8s nodes to report schedulable: OK
 ```
+
+```bash
+❯ talosctl --talosconfig ~/.talos/talosconfig config info
+
+Current context:     comanche
+Nodes:               192.168.1.71,192.168.1.72,192.168.1.73
+Endpoints:           192.168.1.71,192.168.1.72,192.168.1.73
+Roles:               os:admin
+Certificate expires: 1 year from now (2025-12-31)
+```
+
+```bash
+❯ talosctl -n node1 get admissioncontrolconfigs.kubernetes.talos.dev admission-control -o yaml
+
+node: node1
+metadata:
+    namespace: controlplane
+    type: AdmissionControlConfigs.kubernetes.talos.dev
+    id: admission-control
+    version: 1
+    owner: k8s.ControlPlaneAdmissionControlController
+    phase: running
+    created: 2025-01-01T19:14:12Z
+    updated: 1970-01-01T00:00:09Z
+spec:
+    config:
+        - name: PodSecurity
+          configuration:
+            apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+            defaults:
+                audit: restricted
+                audit-version: latest
+                enforce: baseline
+                enforce-version: latest
+                warn: restricted
+                warn-version: latest
+            exemptions:
+                namespaces:
+                    - kube-system
+                runtimeClasses: []
+                usernames: []
+            kind: PodSecurityConfiguration
+```
+
+```bash
+❯ talosctl -n node1 logs kubelet
+```
+
+```bash
+❯ talosctl patch mc --talosconfig talosconfig --nodes 192.168.1.71 -e 192.168.1.71 --patch @patch.yaml
+WARNING: 192.168.1.71: server version 1.7.6 is older than client version 1.9.1
+patched MachineConfigs.config.talos.dev/v1alpha1 at the node 192.168.1.71
+Applied configuration without a reboot
+```
