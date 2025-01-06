@@ -91,18 +91,24 @@ talosctl gen config --with-secrets secrets.yaml "comanche" https://192.168.1.71:
 3) Edit controlplane.yaml:
    
 - set ```controlPlane.scheduler.disabled: false```, I want control plane nodes to schedule work.
+- set `interface` with the value output from `talosctl -n node3 get links` 
 - add the VIP ipadress to network stanza:
 
-      I have:
-      ```
+I have:
+
+```yaml
       network:
-      hostname: node1
-      interfaces:
-         - interface: eth0
-            dhcp: true
-            vip:
-            ip: <VIP>
-      ```
+        hostname: node3
+        interfaces:
+        - dhcp: true
+          interface: enxd83addbb1c3a
+          vip:
+            ip: 192.168.1.59
+        nameservers:
+        - 8.8.8.8
+        - 8.8.4.4
+```
+      
 - set ```install.disk:``` to ```/dev/mmcblk0```
 - optionally set ```install.wipe: true```
 
