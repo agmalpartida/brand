@@ -10,7 +10,7 @@ tags:
 - journalctl
 keywords:
 - journalctl
-summary: "Common systemd logging tasks"
+summary: "Log Management with Journalctl"
 comments: false
 showMeta: false
 showActions: false
