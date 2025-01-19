@@ -1,78 +1,100 @@
 ---
-Title: "Git Undo Changes"
-date: 2024-11-16
+Title: "Git Fuck Up"
+date: 2025-01-19
 categories:
 - Git
 tags:
 - git
 keywords:
 - git
-summary: "Git Undo Changes"
+summary: "Git terror moments"
 comments: false
 showMeta: false
 showActions: false
 ---
 
-# Git
-## Discard All Local Changes in the Working Directory
-
-If you want to discard all uncommitted changes (modifications and untracked files) in your working directory:
-
-```bash
-git reset --hard
-```
-
-If you also have untracked files and want to delete them:
+# I committed and immediately realized I need to make one small change!
 
 ```sh
-git clean -fd
+# make your change
+git add . # or add individual files
+git commit --amend --no-edit
+# now your last commit contains that change!
+# WARNING: never amend public commits
 ```
 
-- `-f` forces the cleaning.
-- `-d` removes untracked directories.
+You could also make the change as a new commit and then do rebase -i in order to squash them both together, but this is about a million times faster.
 
-## Discard Changes in a Specific File
+**Warning**: You should never amend commits that have been pushed up to a public/shared branch! Only amend commits that only exist in your local copy or you're gonna have a bad time.
 
-If you only need to discard changes in a particular file:
+
+# I accidentally committed something to master that should have been on a brand new branch!
 
 ```sh
-git checkout -- filename
+# create a new branch from the current state of master
+git branch some-new-branch-name
+# remove the last commit from the master branch
+git reset HEAD~ --hard
+git checkout some-new-branch-name
+# your commit lives in this branch now 
 ```
 
-Or, in recent versions of Git:
+**Note**: this doesn't work if you've already pushed the commit to a public/shared branch, and if you tried other things first, you might need to git reset HEAD@{number-of-commits-back} instead of HEAD~.
+
+# I accidentally committed to the wrong branch!
 
 ```sh
-git restore filename
+# undo the last commit, but leave the changes available
+git reset HEAD~ --soft
+git stash
+# move to the correct branch
+git checkout name-of-the-correct-branch
+git stash pop
+git add . # or add individual files
+git commit -m "your message here";
+# now your changes are on the correct branch
 ```
 
-## Discard All Changes in Tracked Files
-
-To discard all changes in tracked files without affecting untracked files:
+A lot of people have suggested using cherry-pick for this situation too, so take your pick on whatever one makes the most sense to you!
 
 ```sh
-git restore .
+git checkout name-of-the-correct-branch
+# grab the last commit to master
+git cherry-pick master
+# delete it from master
+git checkout master
+git reset HEAD~ --hard
 ```
 
-## Revert Changes in the Staging Area
+# I tried to run a diff but nothing happened?!
 
-If you've already added files to the staging area (`git add`) but haven't committed yet and want to remove them from there:
+If you know that you made changes to files, but diff is empty, you probably add-ed your files to staging and you need to use a special flag.
 
 ```sh
-git restore --staged filename
+git diff --staged
 ```
 
-## Delete the Last Commit
-
-If you've made a commit but haven't pushed it yet:
+# I need to undo my changes to a file!
 
 ```sh
-git reset --soft HEAD~1
+# find a hash for a commit before the file was changed
+git log
+# use the arrow keys to scroll up and down in history
+# once you've found your commit, save the hash
+git checkout [saved hash] -- path/to/file
+# the old version of the file will be in your index
+git commit -m "Wow, you don't have to copy-paste to undo"
 ```
 
-This undoes the last commit while keeping the changes in your working directory.
-
-If you want to undo the commit and delete the changes from the working directory:
+For real though, if your branch is sooo borked that you need to reset the state of your repo to be the same as the remote repo in a "git-approved" way.
 
 ```sh
-git reset --hard HEAD~1
+# get the lastest state of origin
+git fetch origin
+git checkout master
+git reset --hard origin/master
+# delete untracked files and directories
+git clean -d --force
+# repeat checkout/reset/clean for each borked branch
 ```
+
