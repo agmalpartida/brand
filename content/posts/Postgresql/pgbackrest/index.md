@@ -108,7 +108,7 @@ pgBackRest needs to know *where the base data directory* for the PostgreSQL clus
 The path can be requested from PostgreSQL directly but in a recovery scenario the PostgreSQL process will not be available.
 During backups the value supplied to pgBackRest will be compared against the path that PostgreSQL is running on and they must be equal or the backup will return an error. Make sure that pg-path is exactly equal to data_directory as reported by PostgreSQL. 
 By default Debian/Ubuntu stores clusters in `/var/lib/postgresql/[version]/[cluster]` so it is easy to determine the correct path for the data directory.
-When creating the `/etc/pgbackrest.conf` file, the database owner (usually postgres) must be granted read privileges.
+When creating the `/etc/pgbackrest/pgbackrest.conf` file, the database owner (usually postgres) must be granted read privileges.
 
 ```bash
 mkdir -p /var/lib/pgbackrest
