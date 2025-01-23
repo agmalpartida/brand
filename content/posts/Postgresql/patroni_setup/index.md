@@ -144,16 +144,15 @@ WantedBy=multi-user.target
 5. Once Service created enable the service and start it on all three servers
 
 ```sh
-sudo systemctl daemon-reload
-sudo systemctl enable etcd
-sudo systemctl start etcd
+systemctl daemon-reload
+systemctl enable etcd
+systemctl start etcd
 ```
 
 - You can check cluster working by issuing following commands:
 
 ```sh
-# etcdctl member list --write-out=table
-# etcdctl cluster-health
+etcdctl member list --write-out=table
 ```
 
 - To check leader you can check endpoint status:
