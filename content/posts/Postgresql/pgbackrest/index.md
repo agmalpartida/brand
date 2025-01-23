@@ -74,12 +74,6 @@ WAL is conceptually infinite but in practice is broken up into individual 16MB f
 
 pgBackRest will encrypt the repository based on a user-provided password, thereby preventing unauthorized access to data stored within the repository.
 
-## INSTALL
-
-```sh
-apt install pgbackrest
-```
-
 ## Commands
 
 - annotate        add or modify backup annotation
@@ -133,21 +127,21 @@ repo1-retention-full=2
 log-level-console=info
 log-level-file=debug
 
-[psqlcluster01-backup]
+[demo]
 pg1-path=/var/lib/pgsql/17/data
 ```
 
 *Quoting is not supported and whitespace is trimmed from keys and values*. Sections will be merged if they appear more than once.
 
 The [global] section defines the location of backups, logging settings, and encryption settings.
-The [psqlcluster01-backup] section defines a stanza for the demo backup repository, which we will configure.
+The [demo] section defines a stanza for the demo backup repository, which we will configure.
 
 Finally, initialize the pgBackRest stanza, which contains the definitions for the location, archiving options, backup settings, and other similar configurations for the PostgreSQL database cluster.
 There is generally one stanza defined for each database cluster that needs to have backups.
 The stanza-create command must be run on the primary host after pgbackrest.conf has been configured.
 
 ```bash
-sudo -u postgres pgbackrest --stanza=psqlcluster01-backup stanza-create
+sudo -u postgres pgbackrest --stanza=demo stanza-create
 ```
 
 
