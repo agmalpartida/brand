@@ -74,6 +74,12 @@ WAL is conceptually infinite but in practice is broken up into individual 16MB f
 
 pgBackRest will encrypt the repository based on a user-provided password, thereby preventing unauthorized access to data stored within the repository.
 
+## INSTALL
+
+```sh
+apt install pgbackrest
+```
+
 ## Commands
 
 - annotate        add or modify backup annotation
