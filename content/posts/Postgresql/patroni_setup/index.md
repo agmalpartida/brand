@@ -104,35 +104,38 @@ sudo mkdir /etc/etcd
 sudo chown -R etcd:etcd /var/lib/etcd/ /etc/etcd
 ```
 
-3. Login using etcd user and create .bash_profile file with below content
+3. Config file per node
 
 ```sh
-export ETCD_NAME=`hostname -s`
-export ETCD_HOST_IP=`hostname -i`
+vim /etc/etcd/etcd.conf
+```
+
+```
+ETCD_NAME=node1
+ETCD_DATA_DIR="/var/lib/etcd/postgresql"
+ETCD_INITIAL_CLUSTER="node1=http://172.20.20.211:2380,node2=http://172.20.20.212:2380,node3=http://172.20.20.213:2380"
+ETCD_INITIAL_CLUSTER_STATE="existing"
+ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://172.20.20.213:2380
+ETCD_ADVERTISE_CLIENT_URLS=http://172.20.20.213:2379
+ETCD_LISTEN_PEER_URLS=http://172.20.20.213:2380
+ETCD_LISTEN_CLIENT_URLS=http://172.20.20.213:2379,http://127.0.0.1:2379
 ```
 
 4. Create Service etcd in /etc/systemd/system/etcd.service, replace IP addresses with your corresponding machine IPs
 
 ```
 [Unit]
-Description=etcd
+Description=etcd key-value store
 Documentation=https://github.com/etcd-io/etcd
+After=network.target
 
 [Service]
-Type=notify
-User=etcd
-WorkingDirectory=/var/lib/etcd/
-EnvironmentFile=-/etc/etcd/etcd.conf
-ExecStart=/usr/bin/etcd \\
-  --name ${ETCD_NAME} \\
-  --data-dir=/var/lib/etcd \\
-  --initial-advertise-peer-urls http://${ETCD_HOST_IP}:2380 \\
-  --listen-peer-urls http://${ETCD_HOST_IP}:2380 \\
-  --listen-client-urls http://${ETCD_HOST_IP}:2379,http://127.0.0.1:2379 \\
-  --advertise-client-urls http://${ETCD_HOST_IP}:2379 \\
-  --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster etcd1=http://192.168.56.201:2380,etcd2=http://192.168.56.202:2380,etcd3=http://192.168.56.203:2380 \\
-  --initial-cluster-state new \
+EnvironmentFile=/etc/etcd/etcd.conf
+ExecStart=/usr/bin/etcd
+Restart=always
+RestartSec=5
+LimitNOFILE=40000
 
 [Install]
 WantedBy=multi-user.target
