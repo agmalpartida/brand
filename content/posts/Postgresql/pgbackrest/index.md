@@ -108,7 +108,7 @@ pgBackRest needs to know *where the base data directory* for the PostgreSQL clus
 The path can be requested from PostgreSQL directly but in a recovery scenario the PostgreSQL process will not be available.
 During backups the value supplied to pgBackRest will be compared against the path that PostgreSQL is running on and they must be equal or the backup will return an error. Make sure that pg-path is exactly equal to data_directory as reported by PostgreSQL. 
 By default Debian/Ubuntu stores clusters in `/var/lib/postgresql/[version]/[cluster]` so it is easy to determine the correct path for the data directory.
-When creating the `/etc/pgbackrest/pgbackrest.conf` file, the database owner (usually postgres) must be granted read privileges.
+When creating the `/etc/pgbackrest.conf` file, the database owner (usually postgres) must be granted read privileges.
 
 ```bash
 mkdir -p /var/lib/pgbackrest
@@ -127,21 +127,21 @@ repo1-retention-full=2
 log-level-console=info
 log-level-file=debug
 
-[demo]
-pg1-path=/var/lib/pgsql/15/data
+[psqlcluster01-backup]
+pg1-path=/var/lib/pgsql/17/data
 ```
 
 *Quoting is not supported and whitespace is trimmed from keys and values*. Sections will be merged if they appear more than once.
 
 The [global] section defines the location of backups, logging settings, and encryption settings.
-The [demo] section defines a stanza for the demo backup repository, which we will configure.
+The [psqlcluster01-backup] section defines a stanza for the demo backup repository, which we will configure.
 
 Finally, initialize the pgBackRest stanza, which contains the definitions for the location, archiving options, backup settings, and other similar configurations for the PostgreSQL database cluster.
 There is generally one stanza defined for each database cluster that needs to have backups.
 The stanza-create command must be run on the primary host after pgbackrest.conf has been configured.
 
 ```bash
-sudo -u postgres pgbackrest --stanza=main stanza-create
+sudo -u postgres pgbackrest --stanza=psqlcluster01-backup stanza-create
 ```
 
 
