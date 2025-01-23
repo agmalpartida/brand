@@ -240,7 +240,7 @@ etcdctl ls /service --recursive
 
 ```bash
 etcdctl --endpoints=http://10.201.217.181:2379 get / --prefix
-etcdctl --endpoints=http://10.201.217.181:2379 del /service/psqltest_cluster/members/psqltest01.fullstep.cloud --recursive
+etcdctl --endpoints=http://10.201.217.181:2379 del /service/psqltest_cluster/members/psqltest01 --recursive
 ```
 
 - Status
@@ -581,7 +581,7 @@ The credentials are stored at runtime in the pgpass file specified in the Patron
 ```sh
 root@psql01
  ~  $  cat /tmp/pgpass0
-psql02.fullstep.cloud:5432:*:replicator:replicator
+psql02:5432:*:replicator:replicator
 ```
 
 5. Start Patroni
@@ -632,7 +632,7 @@ $  curl -q http://10.201.217.181:8008|jq
   "patroni": {
     "version": "4.0.2",
     "scope": "devpsql_cluster",
-    "name": "devpsql01.fullstep.cloud"
+    "name": "devpsql01"
   }
 }
 ```
