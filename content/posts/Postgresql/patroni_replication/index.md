@@ -240,3 +240,10 @@ SELECT * FROM pg_replication_slots;
 
 If you are not using slots, ensure that the wal_keep_size parameter is sufficient to cover periods when replicas might be inactive.
 
+# Testing Manual Replication
+
+From the follower node (psql04), try to manually run pg_basebackup to check that the configuration is working correctly.
+
+```sh
+pg_basebackup -h psql06.example.com -U replicator -D /var/lib/postgresql/17/main --wal-method=stream
+```
