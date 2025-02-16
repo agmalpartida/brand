@@ -26,6 +26,7 @@ Overlaying is the process of creating a customized version of the manifest file 
 
 ![](assets/index_2025-02-16_19-39-07.png)
 
+
 ## Kustomize Features
 
 The following are the key features of Kustomize:
@@ -51,6 +52,8 @@ On the other side, the Overlays folder allows us to customize the behavior on a 
 ![](assets/index_2025-02-16_19-52-30.png)
 
 Basically, Kustomize uses patch directive to introduce environment-specific changes on existing Base standard k8s config files without disturbing them.
+Kustomize will check the base deployment file and compare it and patch the changes accordingly. That’s the beauty of Kustomize.
+
 
 ## Transformers
 
@@ -142,3 +145,39 @@ metadata:
 spec:
   replicas: 5
 ```
+
+## Review & Apply Patches
+
+Let’s review the patches. We can use the below command to review the patches and check whether everything is correct or not.
+
+```sh
+kustomize build overlays/dev
+```
+
+## Deploy
+
+We can deploy the customized manifest using the following command.
+
+```sh
+kustomize build overlays/dev | kubectl apply -f -
+```
+
+You can also use the following kubectl command.
+
+```sh
+kubectl apply -k overlays/dev
+```
+
+## Kustomize Configmap and Secret Generators
+
+Kustomize has the functionality to generate Configmaps and Secrets.
+
+In Kustomization YAML there are two supported fields
+
+- configMapGenerator and
+- secretGenerator
+
+## Troubleshooting
+
+While developing or before pushing to git, run kubectl kustomize cfg fmt file_name  command to format the file and set the indentation right. 
+
