@@ -16,6 +16,8 @@ showActions: false
 
 # Kustomize
 
+Kustomize is an official sub-project of Kubernetes and is maintained by the Kubernetes SIG-CLI (Special Interest Group – Command Line Interface) community. It has gained popularity and is widely used in the Kubernetes ecosystem.
+
 Kustomize is an open-source configuration management tool for Kubernetes.
 
 It allows you to define and manage Kubernetes objects such as deployments, Daemonsets, services, configMaps, etc for multiple environments in a declarative manner without modifying the original YAML files. To put it simply, you have a single source of truth for YAMLs, and you patch required configurations on top of the base YAMLs as per the environment requirements.
@@ -27,7 +29,7 @@ Overlaying is the process of creating a customized version of the manifest file 
 ![](assets/index_2025-02-16_19-39-07.png)
 
 
-## Kustomize Features
+## Kustomize Features and Benefits 
 
 The following are the key features of Kustomize:
 
@@ -36,6 +38,20 @@ The following are the key features of Kustomize:
 3. It can add common labels and annotations to all the resources.
 4. It can Modify container images based on the environment it is being deployed in.
 5. Kustomize also ships with secretGenerator and configMapGenerator that use environment files or key-value pairs to create secrets and configMaps.
+
+Below are the benefits of Kustomize:
+
+
+- Simplified Configuration Management: Kustomize is easy to use and allows you to manage and customize your Kubernetes configurations more easily by enabling you to define your configuration in a structured and modular way.
+- Reusability: With Kustomize we can reuse one of the base files across all environments and overlay specifications for each of those environments. This can save you time and effort by allowing you to reuse common configurations rather than having to create them from scratch for each new deployment.
+- Version Control: Kustomize allows you to version control your Kubernetes configurations, making it easier to track changes and roll back to previous configurations if necessary.
+- Template Free: Kustomize is template free. It expresses the full power of Kubernetes API, with no need to parameterize every single line compared to Helm.
+- Kustomize can be run natively from the Kubernetes command line interface.
+- Kustomize has built-in transformers to modify resources and It can be extended via a plug-in mechanism.
+- Kustomize does not have any templating language so we can use the usual YAML to state our configurations rapidly.
+- Kustomize is provided as a standalone Golang package and cli tool so it’s easy to integrate with users’ tools and workflows.
+- We can use Kustomize without installing it if we have kubectl 1.14+ version. kubectl allows us to make declarative changes to our configurations without touching a template.
+
 
 ## kustomization.yamlfile
 
@@ -176,6 +192,18 @@ In Kustomization YAML there are two supported fields
 
 - configMapGenerator and
 - secretGenerator
+
+Let’s understand what problem it solves.
+
+When you update a configmap attached to a pod as a volume, the configmap data gets propagated to the pod automatically. However, the pod does not get the latest data in the configmap in the following scenarios.
+
+- If the pod gets environment variables from the configmap.
+- If the configmap is mounted as a volume using a subpath.
+
+In the above cases, the pod will continue using the old configmap data until we restart the pod. Because the pod is unaware of what got changed in configMap.
+
+
+
 
 ## Troubleshooting
 
