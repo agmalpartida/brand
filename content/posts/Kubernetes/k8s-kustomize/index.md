@@ -202,8 +202,98 @@ When you update a configmap attached to a pod as a volume, the configmap data ge
 
 In the above cases, the pod will continue using the old configmap data until we restart the pod. Because the pod is unaware of what got changed in configMap.
 
+Essentially, the data from the ConfigMaps (such as properties, environment variables, etc.) is used by applications during their startup. So even if the updated configmap data is projected to the pod, if the application running inside the pod doesn’t have any hot reload mechanism, you will have to restart the pod for the changes to take place.
+
+What options do we have to solve this issue?
+
+- You can use Reloader Controller.
+- Using Kustomize ConfigMap Generator
+
+How the Kustoimize Configmap/Secret generator work.
 
 
+1. Kustomize generator creates a configMap and Secret with a unique name(hash) at the end. For example, if the name of the configmap is app-configmap, the generated one would have the name app-configmap-7b58b6ct6d. Here 7b58b6ct6d is the appended hash.
+2. If you update the configmap/Secret, it will create a new configMap/Secret with the same name with a different hash(random sets of characters) at the end.
+3. Kustomize will automatically update the Deployment with the new configmap name.
+4. The moment Deployment is updated by Kustomize, a rollout will be triggered and the application runs on the pod and gets the updated configmap/secret data. In this way, we don’t need to redeploy or restart the deployment.
+
+![](assets/index_2025-02-16_20-34-29.png)
+
+Following are the important points you should know about the Kustomize generators.
+
+- Since Kustomize creates a new configmap every time there is an update, you need to garbage-collect your old orphaned Configmaps. If you have resource quota limits set for namespace, orphaned Configmaps could be an issue. Or you should use the –prune flag with labels in the kubectl apply command. Also, GitOps tools like ArgoCD offer Orphaned resource monitoring mechanisms.
+- You can use the disableNameSuffixHash: true flag to disable creating new Configmaps on every update, but it does not trigger a pod rollout. You need to manually trigger a rollout for pods to get the latest configmap data. Or the application running inside the pod should have a hot-reload mechanism.
+
+Here is the file structure of the repository. To understand the generators, we will use the generators overlay folder.
+
+```sh
+├── base
+│   ├── deployment.yaml
+│   ├── kustomization.yaml
+│   └── service.yaml
+└── overlays
+    ├── dev
+    │   ├── deployment-dev.yaml
+    │   ├── kustomization.yaml
+    │   └── service-dev.yaml
+    ├── generators
+    │   ├── deployment.yaml
+    │   ├── files
+    │   │   └── index.html
+    │   ├── kustomization.yaml
+    │   └── service.yaml
+    └── prod
+        ├── deployment-prod.yaml
+        ├── kustomization.yaml
+        └── service-prod.yaml
+```
+
+The configmap generation options should be added to the kustomization.yaml file under configMapGenerator field. 
+
+If you want to prune the orphaned Configmaps, use the –prune flag with the configmap label as shown below. The --prune flag instructs Kustomize to remove any resources from the final output that is no longer referenced or required.
+
+```sh
+kustomize build overlays/generators | kubectl apply --prune -l app=web-service  -f -
+```
+
+### Disabling Hashed ConfigMap
+
+If you don’t want to create hashed Configmaps using the ConfigMap generator, you can disable it by setting the disableNameSuffixHash flag to true under generatorOptions. It will disable the hash for all the Configmaps mentioned in the kustomization.yaml file.
+
+```yaml
+generatorOptions:
+  labels:
+    app: web-service
+  disableNameSuffixHash: true
+```
+
+Note: If you disable Configmap hash, you need to manually restart the pods for the configmap data to be consumed by the application.
+
+## Generate Secrets Using Kustomize
+
+You can generate secrets the same way you generate Configmaps.
+
+For generating secrets, you need to use the secretGenerator field.
+
+Here is an example of generating a secret object from a file.
+
+```yaml
+secretGenerator:
+- name: nginx-secret
+  files:
+  - files/secret.txt
+```
+
+If you want to generate secrets from literals, use the following format.
+
+```yaml
+secretGenerator:
+- name: nginx-api-password
+  literals:
+  - password="myS3cret"
+```
+
+You can mount the secret as a volume or propagate it as an environment variable as per your requirements.
 
 ## Troubleshooting
 
