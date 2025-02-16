@@ -36,15 +36,13 @@ The following are the key features of Kustomize:
 4. It can Modify container images based on the environment it is being deployed in.
 5. Kustomize also ships with secretGenerator and configMapGenerator that use environment files or key-value pairs to create secrets and configMaps.
 
-## Understanding Kustomize
-
-### kustomization.yamlfile
+## kustomization.yamlfile
 
 The kustomization.yaml file is the main file used by the Kustomize tool.
 
 When you execute Kustomize, it looks for the file named kustomization.yaml. This file contains a list of all of the Kubernetes resources (YAML files) that should be managed by Kustomize. It also contains all the customizations that we want to apply to generate the customized manifest.
 
-### Base and Overlays
+## Base and Overlays
 
 The Base folder represents the config that going to be identical across all the environments. We put all the Kubernetes manifests in the Base. It has a default value that we can overwrite.
 
@@ -54,7 +52,7 @@ On the other side, the Overlays folder allows us to customize the behavior on a 
 
 Basically, Kustomize uses patch directive to introduce environment-specific changes on existing Base standard k8s config files without disturbing them.
 
-### Transformers
+## Transformers
 
 As the name indicates, transformers are something that transforms one config into another. Using Transformers, we can transform our base Kubernetes YAML configs. Kustomize has several built-in transformers. Let’s see some common transformers:
 
@@ -68,7 +66,7 @@ Let’s see an example. In the below image, we have used commonLabels in kustomi
 
 ![](assets/index_2025-02-16_19-56-09.png)
 
-### Image Transformer
+## Image Transformer
 
 It allows us to modify an image that a specific deployment is going to use.
 
@@ -76,7 +74,7 @@ In the following example, the image transformer checks the nginx image name as m
 
 ![](assets/index_2025-02-16_19-57-29.png)
 
-### Patches (Overlays)
+## Patches (Overlays)
 
 Patches or overlays provide another method to modify Kubernetes configs. It provides more specific sections to change in the configuration. There are 3 parameters we need to provide:
 
@@ -89,4 +87,58 @@ There are two ways to define the patch:
 1. JSON 6902 and
 2. Stragetic Merge Patching.
 
+### JSON 6902 Patching
 
+In this way, there are two details that we have to provide, the target and the patch details i.e. operation, path, and the new value.
+
+```yaml
+patches:
+  - target:
+      kind: Deployment
+      name: web-deployment
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 5
+```
+
+![](assets/index_2025-02-16_20-03-50.png)
+
+### Stragetic Merge Patching
+
+In this way, all the patch details are similar to a standard k8s config. It would be the original manifest file, we just add the fields that need to be modified.
+
+```yaml
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: web-deployment
+      spec:
+        replicas: 5
+```
+
+![](assets/index_2025-02-16_20-05-15.png)
+
+### Patch From File
+
+For both types of patching, instead of inline configs, we can use the separate file method. Specify all the patch details in a YAML file and refer it to the kustomization.yaml file under the patches directive.
+
+For example, in kustomization.yaml you need to mention the patch file as follows. You need to specify the relative path of the YAML file.
+
+```yaml
+patches:
+- path: replicas.yaml
+```
+
+And we can put the changes in replicas.yaml as given below.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 5
+```
