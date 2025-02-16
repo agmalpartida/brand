@@ -25,3 +25,14 @@ Kustomize has two key concepts, Base and Overlays. With Kustomize we can reuse t
 Overlaying is the process of creating a customized version of the manifest file (base manifest + overlay manifest = customized manifest file).
 
 ![](assets/index_2025-02-16_19-39-07.png)
+
+## Kustomize Features
+
+The following are the key features of Kustomize:
+
+1. Acts as a configuration tool with declarative configuration same as Kubernetes YAMLs.
+2. It can modify resources without altering the original files.
+3. It can add common labels and annotations to all the resources.
+4. It can Modify container images based on the environment it is being deployed in.
+5. Kustomize also ships with secretGenerator and configMapGenerator that use environment files or key-value pairs to create secrets and configMaps.
+
