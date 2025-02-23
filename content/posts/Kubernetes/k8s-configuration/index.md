@@ -13,7 +13,18 @@ Even the Kubernetes core team admits that Kubernetes would've been such a succes
 
 At some point, a lot of different people and companies tried to solve similar problems regarding containers. They agreed to build some common interfaces for their solutions so that parts of their implementations could be swapped while relying on certain standards. This led to the creation of the Open Container Initiative (OCI), Container Network Interface (CNI), Container Storage Interface (CSI) and Container Runtime Interface (CRI).
 
+## Namespaces 
+
+Why Use Namespaces?
+
+Namespaces help:
+
+- Isolate Resources: Separate applications and environments (e.g., development, staging, production) within the same cluster.
+- Manage Access: Apply role-based access control (RBAC) for specific namespaces.
+- Organize Resources: Group related resources logically for clarity.
+
 ## CRI
+
 With version 1.24, Kubernetes has overcome its dependence on Docker and now only relies on any CRI compliant runtime to start containers.
 The containerd project was originally developed by Docker Inc and still is the core of Docker, but its ownership was since donated to the CNCF.
 When a new Pod is scheduled to a node, the kubelet communicates with containerd over the container runtime interface to actually pull the image and start the container with the configuration specified in the pod definition. Containerd is now in charge to set up the Linux namespace, mount volumes or devices and apply seccomp profiles and much more for every new container. That's a lot of tasks, and not quite according to the UNIX philosophy to do one thing and do it well.
