@@ -247,3 +247,35 @@ From the follower node (psql04), try to manually run pg_basebackup to check that
 ```sh
 pg_basebackup -h psql06.example.com -U replicator -D /var/lib/postgresql/17/main --wal-method=stream
 ```
+
+# Troubleshooting
+
+Try to automatic re-sincronization. If the replica is out of date, but still is functional, try to restart in order to sincronize with the leader:
+
+```sh
+patronictl -c /etc/patroni/patroni.yml restart "replica_name"
+```
+
+Force manual re-sincronization 
+
+```sh
+systemctl stop patroni
+pgrep -fa postgres 
+pkill -9 postgres
+```
+
+Remove old data of the replica:
+
+For be sure that the replica do a fresh start, remove the content of data directory:
+
+```sh
+rm -rf /var/lib/postgresql/17/main/*
+```
+
+Alternative: Promove replica to leader. If the replica can not sincronize and you need to takce the control, you can force it to be the new leader:
+
+```sh
+patronictl -c /etc/patroni/patroni.yml failover --force
+```
+
+
