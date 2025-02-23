@@ -316,6 +316,73 @@ Remove nofailover tag:
 curl -XPATCH -d '{"tags": {"nofailover": false}}' http://127.0.0.1:8008/config
 ```
 
+### Replace a failed node with a new one
+
+```sh
+ ~  #  etcd --version
+etcd Version: 3.5.16
+Git SHA: f20bbad
+Go Version: go1.22.7
+Go OS/Arch: linux/amd64
+
+ ~  #  etcdctl member list
+1826af1ab9e8f268, started, psql02, http://172.20.20.212:2380, http://172.20.20.212:2379, false
+4ce4c031681be159, started, psql01, http://172.20.20.211:2380, http://172.20.20.211:2379, false
+8dafc4754417b6ab, started, psql03, http://172.20.20.213:2380, http://172.20.20.213:2379, false
+```
+
+If the node does not contain important data and can be removed:
+
+From a healthy node (172.20.20.211 or 172.20.20.212), remove the node failed from the cluster:
+
+```sh
+etcdctl --endpoints=http://172.20.20.211:2379 member remove 8dafc4754417b6ab
+
+ ~  #  etcdctl member remove 8dafc4754417b6ab
+Member 8dafc4754417b6ab removed from cluster 84a78972d1659e7b
+
+ ~  #  etcdctl member list
+1826af1ab9e8f268, started, psql02, http://172.20.20.212:2380, http://172.20.20.212:2379, false
+4ce4c031681be159, started, psql01, http://172.20.20.211:2380, http://172.20.20.211:2379, false
+```
+
+Stop the service:
+
+```sh
+systemctl stop etcd
+```
+
+Clean up local data:
+
+```sh
+rm -rf /var/lib/etcd/postgresql
+```
+
+Re-add the node to the cluster from a healthy node:
+
+```sh
+etcdctl --endpoints=http://172.20.20.211:2379 member add <node> --peer-urls="http://172.20.20.213:2380"
+
+ ~  #  etcdctl member add psql03 --peer-urls=http://172.20.20.213:2380
+Member 5a02ef771c6f4905 added to cluster 84a78972d1659e7b
+
+ETCD_NAME="psql03"
+ETCD_INITIAL_CLUSTER="psql02=http://172.20.20.212:2380,psql01=http://172.20.20.211:2380,psql03=http://172.20.20.213:2380"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://172.20.20.213:2380"
+ETCD_INITIAL_CLUSTER_STATE="existing"
+```
+
+Restart etcd on node:
+
+```sh
+systemctl restart etcd
+```
+
+
+
+
+
+
 # Postgres Set up
 
 ```bash
