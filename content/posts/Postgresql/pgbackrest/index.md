@@ -122,8 +122,10 @@ chown -R postgres:postgres /var/lib/pgbackrest
 [global]
 repo1-cipher-pass=RvcooAMdZgwE5T4EzsjHvWE5+sIAKDEGU95APTPalQPfdgjQ8sLakAy3PqIBkogc
 repo1-cipher-type=aes-256-cbc
-repo1-path=/var/lib/pgbackrest
+repo1-path=/mnt/backup/pgbackrest
 repo1-retention-full=2
+repo1-retention-diff=5
+repo1-retention-archive=2
 log-level-console=info
 log-level-file=debug
 
@@ -187,6 +189,19 @@ repo1-retention-full=2
 
 [global:archive-push]
 compress-level=3 
+```
+
+For expire manually:
+
+```sh
+# pgbackrest expire --stanza=psqlcluster01-backup
+
+2025-02-17 07:01:12.614 P00   INFO: expire command begin 2.53.1: --exec-id=2739124-7ec42802 --log-level-console=info --log-level-file=debug --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/mnt/backup/pgbackrest --repo1-retention-archive=7 --repo1-retention-diff=5 --repo1-retention-full=2 --stanza=psqlcluster01-backup
+2025-02-17 07:01:12.755 P00   INFO: repo1: expire diff backup 20250208-020002F_20250209-020001D
+2025-02-17 07:01:12.824 P00   INFO: repo1: expire diff backup 20250208-020002F_20250211-020002D
+2025-02-17 07:01:13.128 P00   INFO: repo1: remove expired backup 20250208-020002F_20250211-020002D
+2025-02-17 07:05:20.549 P00   INFO: repo1: remove expired backup 20250208-020002F_20250209-020001D
+2025-02-17 07:09:04.918 P00   INFO: expire command end: completed successfully (472305ms)
 ```
 
 ## Configure Repository Encryption 
