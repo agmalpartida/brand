@@ -1,5 +1,5 @@
 ---
-Title: "k9s"
+Title: "k9s: Kubernetes CLI To Manage Your Clusters"
 date: 2025-03-09
 categories:
 - Kubernetes
@@ -8,7 +8,7 @@ tags:
 keywords:
 - k8s
 - k9s
-summary: ""
+summary: "Kubernetes CLI To Manage Your Clusters"
 comments: false
 showMeta: false
 showActions: false
