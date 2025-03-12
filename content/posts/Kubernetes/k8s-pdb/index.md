@@ -1,15 +1,17 @@
-+++
-title = 'Pod disruption budget (PDB)'
-date = '2025-02-23
-categories = ['K8s']
-tags = ['k8s']
-keywords = ['k8s','pdb']
-summary = ''
-comments = false
-showActions = false
-showMeta = false
-+++
-
+---
+Title: "Pod disruption budget (PDB)"
+date: 2025-02-23
+categories:
+- Kubernetes 
+tags:
+- k8s
+keywords:
+- k8s
+summary: ""
+comments: false
+showMeta: false
+showActions: false
+---
 
 # Pod disruption budget
 
