@@ -42,6 +42,12 @@ Components include:
 - Failure Scenarios and How the Cluster Recovers From Them
 By unplugging network and power cables, killing main processes, attempting to saturate processors. All of this while continuously writing and reading data from PostgreSQL. The idea was to see how Patroni would handle the failures and manage the cluster to continue delivering service.
 
+
+## My Architecture
+
+![](assets/index_2025-03-23_19-36-29.png)
+
+
 ## Patroni 
 
 [Reference](https://patroni.readthedocs.io/en/latest/) 
