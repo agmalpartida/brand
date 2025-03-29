@@ -17,4 +17,11 @@ showActions: false
 
 ## Plugins
 
+- Basic Structure of a kubectl Plugin
+
+kubectl plugins are simply executables that start with the `kubectl-` prefix. When you execute a command like:
+
+`kubectl my-plugin` 
+
+kubectl searches for an executable called kubectl-my-plugin in the directories listed in the PATH environment variable and executes it.
 
