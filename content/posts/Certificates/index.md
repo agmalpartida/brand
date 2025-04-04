@@ -47,6 +47,13 @@ openssl x509 -in certificate.pem -noout -pubkey
 openssl rsa -in ssl.key -pubout
 ```
 
+### Extract private key and crt from PEM file
+
+```sh
+openssl pkey -in mydomain.pem -out tls.key
+openssl crl2pkcs7 -nocrl -certfile mydomain.pem | openssl pkcs7 -print_certs -out tls.crt
+```
+
 ## PFX
 
 >**Note**: You can try directly specifying the use of the legacy provider in the command, which may force OpenSSL to load the deprecated algorithms at runtime:
