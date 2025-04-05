@@ -20,6 +20,48 @@ A consistent labeling strategy helps you filter resources quickly and maintain a
 - Labels: Key-value pairs used for grouping and selecting Kubernetes objects. For instance, app=my-app, env=staging, team=payments.
 - Annotations: Key-value pairs for attaching non-identifying metadata (e.g., version info, contact email, or last-deployed timestamp).
 
+### Safe-to-Evict Annotations
+
+Pods marked with safe-to-evict: false cannot be removed or rescheduled during node scaling or bin-packing operations.
+
+Annotation Example:
+
+```yaml
+metadata:
+  annotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+```
+
+- Naked Pods
+
+Pods created directly without a controller (e.g., Deployments, ReplicaSets) lack the automation needed for rescheduling or scaling.
+
+Naked Pod Example:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: standalone-pod
+spec:
+  containers:
+  - name: app-container
+    image: app-image:v1
+```
+
+These pods prevent nodes from being scaled down, leading to idle resources.
+
+- Removing Safe-to-Evict Annotations
+
+Safe-to-evict annotations prevent pods from being evicted by the autoscaler. To find pods with this annotation:
+
+```sh
+kubectl get pods --all-namespaces -o json | jq '.items[] | select(.metadata.annotations."cluster-autoscaler.kubernetes.io/safe-to-evict" == "false") | .metadata.name'
+```
+
+Once identified, edit the pod configuration to remove the annotation.
+
+
 ## Namespaces 
 
 Why Use Namespaces?
