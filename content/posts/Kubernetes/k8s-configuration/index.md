@@ -13,6 +13,13 @@ Even the Kubernetes core team admits that Kubernetes would've been such a succes
 
 At some point, a lot of different people and companies tried to solve similar problems regarding containers. They agreed to build some common interfaces for their solutions so that parts of their implementations could be swapped while relying on certain standards. This led to the creation of the Open Container Initiative (OCI), Container Network Interface (CNI), Container Storage Interface (CSI) and Container Runtime Interface (CRI).
 
+## Labels
+
+A consistent labeling strategy helps you filter resources quickly and maintain a clear mental map of your cluster.
+
+- Labels: Key-value pairs used for grouping and selecting Kubernetes objects. For instance, app=my-app, env=staging, team=payments.
+- Annotations: Key-value pairs for attaching non-identifying metadata (e.g., version info, contact email, or last-deployed timestamp).
+
 ## Namespaces 
 
 Why Use Namespaces?
@@ -22,6 +29,16 @@ Namespaces help:
 - Isolate Resources: Separate applications and environments (e.g., development, staging, production) within the same cluster.
 - Manage Access: Apply role-based access control (RBAC) for specific namespaces.
 - Organize Resources: Group related resources logically for clarity.
+
+Namespace Like Your Life Depends on It
+
+- Team-based namespaces: Dev, QA, Prod, or per microservice if that makes sense.
+- Access Control: Combine namespaces with RBAC (Role-Based Access Control) policies to ensure that only the right people (and services) can mess with your stuff.
+-  Resource Quotas: You can set quotas (e.g., CPU, memory) per namespace, preventing one rogue microservice from hogging all resources.
+
+Take a step back and design your namespace strategy; future you will say thanks.
+
+
 
 ## CRI
 
@@ -55,3 +72,30 @@ By default, containerd calls runc. The runc binary actually spawns the container
 ## Security
 
 ![](images/k8s-security.jpg)
+
+### Secrets
+
+Kubernetes expects the values in stringData to be strings (string)
+
+```yaml
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque
+stringData:
+  password: "12345"  # ✅ It is now a string
+```
+
+If you use data, you must ensure that the values are in Base64:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque
+data:
+  password: MTIzNDU=  # "12345" in Base64
+```
+
+`echo -n "12345" | base64` 
