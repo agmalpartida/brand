@@ -45,7 +45,10 @@ By default, containerd calls runc. The runc binary actually spawns the container
 
 ![](images/k8s-net.jpg)
 
-## Resources Optimization
+## Resources 
+
+- **Resource Requests**: This is basically your container’s baseline. If your container requests 200m CPU and 512Mi of memory, the Kubernetes scheduler will place your Pod on a node with at least that much capacity available.
+- **Resource Limits:**:  This is the upper bound. If your container tries to exceed the limit, it might get throttled (CPU) or even evicted (memory).
 
 ![](images/k8s-optimization-resources.jpg)
 
