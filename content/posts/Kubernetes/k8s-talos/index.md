@@ -244,3 +244,22 @@ WARNING: 192.168.1.71: server version 1.7.6 is older than client version 1.9.1
 patched MachineConfigs.config.talos.dev/v1alpha1 at the node 192.168.1.71
 Applied configuration without a reboot
 ```
+
+## Client installation
+
+- MacOS:
+
+```sh
+curl -LO https://github.com/siderolabs/talos/releases/download/v1.7.6/talosctl-darwin-amd64
+chmod +x talosctl-darwin-amd64
+sudo mv talosctl-darwin-amd64 /usr/local/bin/talosctl
+talosctl version
+```
+
+## Operations
+
+- Show machine configuration:
+
+```sh
+talosctl -n node3 get machineconfig -o yaml
+```
