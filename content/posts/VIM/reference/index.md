@@ -19,6 +19,15 @@ showActions: false
 :h jumplist
 ```
 
+## Astronvim
+
+### Shortcuts
+
+- Symbols: 
+  - <Leader>ls : Launch FZF to search for symbols.
+  - <Leader>lS : Toggle right sidebar with all symbols. 
+
+
 ## Navigation & Repetition
 
 - f{s} – Jumps to the next occurrence of the character {s} in the current line.
