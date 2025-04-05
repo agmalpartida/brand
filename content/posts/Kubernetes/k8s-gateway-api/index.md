@@ -85,3 +85,13 @@ Securing communication between microservices is critical, especially for sensiti
 Layer 4 (L4) & Layer 7 (L7) Traffic Management:
 
 Applications frequently require both low-level TCP/UDP routing (L4) and high-level HTTP/S routing (L7). Traditional setups struggle to provide unified solutions that handle both effectively.
+
+
+Verify Gateway version:
+kubectl get crd gateways.gateway.networking.k8s.io -o yaml
+
+CRDs update:
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v0.7.0/gateway.networking.k8s.io.crds.yaml
+
+
+
