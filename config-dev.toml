@@ -11,14 +11,12 @@ pygmentsUseClasses = true
 mainsections = ["posts", "papermod"]
 # googleAnalytics = ""
 
-# Se reemplaza paginate por pagerSize, según la advertencia
 [pagination]
 pagerSize = 10
 
 [minify]
 disableXML = true
 minifyOutput = true
-paginate = 3
 languageCode = "en-us"
 DefaultContentLanguage = "en-us"
 enableInlineShortcodes = true
