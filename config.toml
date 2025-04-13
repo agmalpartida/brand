@@ -18,6 +18,12 @@ pagerSize = 10
 
 [minify]
 disableXML = true
+minifyOutput = true
+paginate = 3
+languageCode = en-us
+DefaultContentLanguage = en-us
+enableInlineShortcodes = true
+footnoteReturnLinkContents = ^
 
 [languages]
   [languages.en]
@@ -99,11 +105,19 @@ keys = ["title"]
 
 [markup]
   [markup.highlight]
+  anchorLineNos = false
   codeFences = true
-  guessSyntax = true
+  guessSyntax = false
   lineNos = true
-  noClasses = false
-  style = "monokai"
+  noClasses = true
+  style = "github"
+  tabWidth = 4
+  hl_Lines = ""
+  hl_inline = false
+  lineAnchors = ""
+  lineNoStart = 1
+  lineNos = false
+  lineNumbersInTable = true
 
   [markup.goldmark]
     [markup.goldmark.renderer]
