@@ -26,7 +26,7 @@ Kustomize has two key concepts, Base and Overlays. With Kustomize we can reuse t
 
 Overlaying is the process of creating a customized version of the manifest file (base manifest + overlay manifest = customized manifest file).
 
-![](assets/index_2025-02-16_19-39-07.png)
+![](./assets/index_2025-02-16_19-39-07.png)
 
 
 ## Kustomize Features and Benefits 
@@ -65,7 +65,7 @@ The Base folder represents the config that going to be identical across all the 
 
 On the other side, the Overlays folder allows us to customize the behavior on a per-environment basis. We can create an Overlay for each one of the environments. We specify all the properties and parameters that we want to overwrite & change.
 
-![](assets/index_2025-02-16_19-52-30.png)
+![](./assets/index_2025-02-16_19-52-30.png)
 
 Basically, Kustomize uses patch directive to introduce environment-specific changes on existing Base standard k8s config files without disturbing them.
 Kustomize will check the base deployment file and compare it and patch the changes accordingly. That’s the beauty of Kustomize.
@@ -83,7 +83,7 @@ As the name indicates, transformers are something that transforms one config int
 
 Let’s see an example. In the below image, we have used commonLabels in kustomization.yaml where label env: dev gets added to the customized deployment.yaml.
 
-![](assets/index_2025-02-16_19-56-09.png)
+![](./assets/index_2025-02-16_19-56-09.png)
 
 ## Image Transformer
 
@@ -91,7 +91,7 @@ It allows us to modify an image that a specific deployment is going to use.
 
 In the following example, the image transformer checks the nginx image name as mentioned deployment.yaml and changes it to the new name which is ubuntu in the kustomization.yaml file. We can change the tags as well.
 
-![](assets/index_2025-02-16_19-57-29.png)
+![](./assets/index_2025-02-16_19-57-29.png)
 
 ## Patches (Overlays)
 
@@ -121,7 +121,7 @@ patches:
         value: 5
 ```
 
-![](assets/index_2025-02-16_20-03-50.png)
+![](./assets/index_2025-02-16_20-03-50.png)
 
 ### Stragetic Merge Patching
 
@@ -138,7 +138,7 @@ patches:
         replicas: 5
 ```
 
-![](assets/index_2025-02-16_20-05-15.png)
+![](./assets/index_2025-02-16_20-05-15.png)
 
 ### Patch From File
 
@@ -217,7 +217,7 @@ How the Kustoimize Configmap/Secret generator work.
 3. Kustomize will automatically update the Deployment with the new configmap name.
 4. The moment Deployment is updated by Kustomize, a rollout will be triggered and the application runs on the pod and gets the updated configmap/secret data. In this way, we don’t need to redeploy or restart the deployment.
 
-![](assets/index_2025-02-16_20-34-29.png)
+![](./assets/index_2025-02-16_20-34-29.png)
 
 Following are the important points you should know about the Kustomize generators.
 

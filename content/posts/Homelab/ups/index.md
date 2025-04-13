@@ -190,5 +190,5 @@ Next in Grafana click the + icon on the left and select 'import'. We'll be impor
 
 Select your Influx UPS data source as the new data source we just created above and hit import.
 
-![ups](./images/ups.png) 
+![ups](./assets/ups.png) 
 

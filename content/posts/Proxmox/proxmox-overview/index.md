@@ -10,4 +10,4 @@ title = 'Proxmox Overview'
 
 # Overview
 
-![](images/High-level-overview-of-Proxmox-cluster-components.webp)
+![](./assets/High-level-overview-of-Proxmox-cluster-components.webp)

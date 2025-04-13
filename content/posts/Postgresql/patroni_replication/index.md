@@ -25,7 +25,7 @@ One less obvious disadvantage of this method is the fact that the copying **is u
 
 While this method is useful for scenarios where the Recovery Point Objective (**RPO, i.e. the time span within which transactions may be lost after recovery** ) or the Recovery Time Objective (**RTO, i.e. the time it takes from failure to successful recovery** ) are quite large, it is not sufficient for some high-availability requirements, which sometimes require an RPO of zero and RTO in the range of a couple seconds only.
 
-![Binary](./images/patroni-binary-sync.png) 
+![Binary](./assets/patroni-binary-sync.png) 
 
 # Streaming Replication
 
@@ -38,7 +38,7 @@ Streaming replication needs more setup - usually this involves creating a replic
 
 When streaming replication is employed with the additional requirement of synchronicity, the replica must confirm that it has received (and written) all prior log messages before the primary can confirm or reject a client's commit request. As a result, after a failure on the primary, the replica can instantly be promoted and business can carry on as usual after all connections have been diverted to the replica.
 
-![Streaming](./images/patroni-stream-sync.png) 
+![Streaming](./assets/patroni-stream-sync.png) 
 
 # Five Reasons Why WAL Segments Accumulate in the pg_wal Directory in PostgreSQL
 

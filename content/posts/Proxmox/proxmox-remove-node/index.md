@@ -8,6 +8,10 @@ tags = ['proxmox']
 title = 'Proxmox Remove Node from Cluster Including Ceph'
 +++
 
+# Proxmox
+
+![](./assets/ha-diagram-animated.gif) 
+
 The pvecm command is the tool you use to manage cluster nodes. It provides capabilities for checking the status of nodes, adding new nodes, and, crucially, removing nodes from the cluster.
 
 ```sh
