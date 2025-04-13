@@ -25,4 +25,4 @@ In order to set up the VPN tunnel, first the peers need to be authenticated. Aft
 
 The following figure shows a VPN tunnel between two sites. When a client that is secured by VPN Peer A needs content from a server located at the other site, VPN Peer A initiates a connection request to VPN Peer B. If the security policy permits the connection, VPN Peer A uses the IKE Crypto profile parameters (IKE phase 1) to establish a secure connection and authenticate VPN Peer B. Then, VPN Peer A establishes the VPN tunnel using the IPSec Crypto profile, which defines the IKE phase 2 parameters to allow the secure transfer of data between the two sites.
 
-![vpn](./assets/vpn-ipsec.png) 
+![vpn](assets/vpn-ipsec.png) 

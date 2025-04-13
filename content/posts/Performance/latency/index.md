@@ -10,4 +10,4 @@ showActions = false
 showMeta = false
 +++
 
-![alt text](./assets/latency_reponse-time.png) 
+![alt text](assets/latency_reponse-time.png) 

@@ -90,30 +90,30 @@ When a new Pod is scheduled to a node, the kubelet communicates with containerd 
 
 By default, containerd calls runc. The runc binary actually spawns the container process with all its applied properties. It does not pull images, manages the containers file system, sets up networking or monitors the container process. Overly simplified it is just a spawn syscall with a bunch of extra properties for some isolation, but it still runs on the same kernel since containers are NOT VMs.
 
-![](./assets/k8s-overall.jpg)
+![](assets/k8s-overall.jpg)
 
 ## Master Components
 
-![](./assets/k8s-master-components.jpg)
+![](assets/k8s-master-components.jpg)
 
 ## Configuration
 
-![](./assets/k8s-config.jpg)
+![](assets/k8s-config.jpg)
 
 ## Networking
 
-![](./assets/k8s-net.jpg)
+![](assets/k8s-net.jpg)
 
 ## Resources 
 
 - **Resource Requests**: This is basically your container’s baseline. If your container requests 200m CPU and 512Mi of memory, the Kubernetes scheduler will place your Pod on a node with at least that much capacity available.
 - **Resource Limits:**:  This is the upper bound. If your container tries to exceed the limit, it might get throttled (CPU) or even evicted (memory).
 
-![](./assets/k8s-optimization-resources.jpg)
+![](assets/k8s-optimization-resources.jpg)
 
 ## Security
 
-![](./assets/k8s-security.jpg)
+![](assets/k8s-security.jpg)
 
 ### Secrets
 

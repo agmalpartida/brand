@@ -15,9 +15,9 @@ showActions: false
 
 ## Overview
 
-![Docker Image](./assets/dk.jpg)
+![Docker Image](assets/dk.jpg)
 
 ## Networking
 
-![Docker Networking](./assets/dk-net.jpg)
+![Docker Networking](assets/dk-net.jpg)
 

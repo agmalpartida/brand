@@ -1,6 +1,5 @@
 baseURL = "http://localhost:1313"
-title = "Development Environment"
-
+title = "Dev"
 theme = "PaperModX"
 enableInlineShortcodes = true
 enableRobotsTXT = true
@@ -9,7 +8,7 @@ buildFuture = false
 buildExpired = false
 enableEmoji = true
 pygmentsUseClasses = true
-mainsections = ["posts"]
+mainsections = ["posts", "papermod"]
 # googleAnalytics = ""
 
 # Se reemplaza paginate por pagerSize, según la advertencia
@@ -18,6 +17,11 @@ pagerSize = 10
 
 [minify]
 disableXML = true
+minifyOutput = true
+paginate = 3
+languageCode = "en-us"
+DefaultContentLanguage = "en-us"
+footnoteReturnLinkContents = "^"
 
 [languages]
   [languages.en]
@@ -53,18 +57,17 @@ env = "production"
 description = ""
 author = "Alberto"
 defaultTheme = "auto"
-DateFormat = "2006-01-02"
-ShowShareButtons = false
+# DateFormat = "2024-12-31"
+ShowShareButtons = true
 ShowReadingTime = false
 displayFullLangName = true
 ShowPostNavLinks = true
 ShowBreadCrumbs = true
 ShowCodeCopyButtons = true
-ShowRssButtonInSectionTermList = false
+ShowRssButtonInSectionTermList = true
 ShowAllPagesInArchive = false
 ShowPageNums = true
 ShowToc = true
-TocSide = 'left'
 TocOpen = true
 images = ["images/logo.png"]
 extendCodeBackground = true
@@ -74,10 +77,9 @@ VisitCount = true
 [params.profileMode]
 enabled = true
 title = "Alberto Galvez"
-showIcons = true
 
 [params.editPost]
-URL = "https://github.com/agmalpartida/brand/tree/published/content"
+URL = "https://github.com/agmalpartida/brand/tree/main/content"
 Text = "Suggest Changes"
 appendFilePath = true
 
@@ -101,13 +103,20 @@ keys = ["title"]
 
 [markup]
   [markup.highlight]
+  anchorLineNos = false
   codeFences = true
-  guessSyntax = true
+  guessSyntax = false
   lineNos = true
-  noClasses = false
-  style = "monokai"
+  noClasses = true
+  style = "github"
+  tabWidth = 4
+  hl_Lines = ""
+  hl_inline = false
+  lineAnchors = ""
+  lineNoStart = 1
+  lineNos = false
+  lineNumbersInTable = true
 
   [markup.goldmark]
     [markup.goldmark.renderer]
     unsafe = true
-

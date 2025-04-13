@@ -21,7 +21,7 @@ Percona Distribution for PostgreSQL provides the best and most critical enterpri
 
 [Reference](https://docs.percona.com/postgresql/17/) 
 
-![HA](./assets/PostgreSQL_High_Availability.png) 
+![HA](assets/PostgreSQL_High_Availability.png) 
 
 Components include:
 
@@ -68,7 +68,7 @@ Patroni is open source library and does not come with enterprise support, you ne
 - Solution Architecture:
 Here we have used 8 VMs to avoid SPOF and achieve High Availability on Postgres.
 
-![patroni](./assets/patroni-architecture.png) 
+![patroni](assets/patroni-architecture.png) 
 
 Key benefits of Patroni:
 
@@ -84,7 +84,7 @@ Key benefits of Patroni:
 
 The following diagram shows the architecture of a three-node PostgreSQL cluster with a single-leader node.
 
-![](./assets/ha-architecture-patroni.png) 
+![](assets/ha-architecture-patroni.png) 
 
 - Components
 
@@ -161,7 +161,7 @@ There are several native methods for achieving high availability with PostgreSQL
 - streaming replication
 
 
-![](./assets/4nines.png) 
+![](assets/4nines.png) 
 
 # Software & Hardware
 
@@ -189,7 +189,7 @@ Version 9.5 and Above: Patroni seamlessly integrates with PostgreSQL versions 9.
 
 Deploying three PostgreSQL servers instead of two adds an extra layer of protection, safeguarding against multi-node failures and bolstering system reliability.
 
-![patroni](./assets/patroni-architecturei2.png) 
+![patroni](assets/patroni-architecture2.png) 
 
 # Patroni common operations
 

@@ -21,7 +21,7 @@ We will use a three server architecture where pgBackRest resides on a dedicated 
 
 The following diagram illustrates the architecture layout:
 
-![](./assets/DR-architecture.png) 
+![](assets/DR-architecture.png) 
 
 - Components:
 
