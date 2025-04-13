@@ -21,6 +21,7 @@ minifyOutput = true
 paginate = 3
 languageCode = "en-us"
 DefaultContentLanguage = "en-us"
+enableInlineShortcodes = true
 footnoteReturnLinkContents = "^"
 
 [languages]
@@ -114,7 +115,6 @@ keys = ["title"]
   hl_inline = false
   lineAnchors = ""
   lineNoStart = 1
-  lineNos = false
   lineNumbersInTable = true
 
   [markup.goldmark]

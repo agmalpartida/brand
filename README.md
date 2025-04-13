@@ -12,7 +12,10 @@ Hugo v0.92+
 
 ```
 git submodule update --init --recursive
-./hugo
+
+or
+
+git clone https://github.com/reorx/hugo-PaperModX.git themes/PaperModX
 ```
 
 ## Start Hugo server
