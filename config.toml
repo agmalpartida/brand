@@ -1,6 +1,7 @@
 baseURL = "https://albertogalvez.com/"
 title = "AG"
-theme = "PaperMod"
+#theme = "PaperMod"
+theme = "PaperModX"
 enableInlineShortcodes = true
 enableRobotsTXT = true
 buildDrafts = false
