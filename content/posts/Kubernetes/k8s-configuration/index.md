@@ -261,6 +261,46 @@ So, Guaranteed pods are safest, and BestEffort gets evicted first.
 
 Behavior During Resource Pressure:
 
+![](assets/index_2025-04-13_20-30-58.png)
+
+Multi-Container Pod Example
+
+Let's look at a pod with two containers and different QoS setups:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+    resources:
+      requests:
+        memory: "100Mi"
+        cpu: "200m"
+      limits:
+        memory: "100Mi"
+        cpu: "200m"
+  - name: sidecar
+    image: busybox
+    command: ["sh", "-c", "while true; do echo sidecar; sleep 2; done"]
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+      limits:
+        memory: "128Mi"
+        cpu: "200m"
+```
+
+Resulting QoS for the Pod: Burstable, since sidecar has request ≠ limit
+
+Best Practices
+
+![](assets/index_2025-04-13_20-32-35.png)
+
 
 ## Security
 
