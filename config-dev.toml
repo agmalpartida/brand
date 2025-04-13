@@ -64,6 +64,7 @@ ShowRssButtonInSectionTermList = false
 ShowAllPagesInArchive = false
 ShowPageNums = true
 ShowToc = true
+TocSide = 'left'
 TocOpen = true
 images = ["images/logo.png"]
 extendCodeBackground = true
@@ -109,5 +110,4 @@ keys = ["title"]
   [markup.goldmark]
     [markup.goldmark.renderer]
     unsafe = true
-
 

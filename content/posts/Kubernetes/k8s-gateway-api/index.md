@@ -1,6 +1,6 @@
 ---
 Title: "Kubernetes Gateway Api"
-date: date
+date: 2025-04-13
 categories:
 - Kubernetes
 tags:

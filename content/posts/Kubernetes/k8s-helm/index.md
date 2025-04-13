@@ -1,6 +1,6 @@
 ---
 Title: "Helm: The package manager for Kubernetes"
-date: date
+date: 2025-04-13
 categories:
 - Kubernetes
 tags:

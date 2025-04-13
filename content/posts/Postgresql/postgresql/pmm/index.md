@@ -1,6 +1,6 @@
 ---
 Title: PSQL Percona Monitoring and Management
-date: date
+date: 2025-04-13
 categories:
 - Postgresql
 tags:

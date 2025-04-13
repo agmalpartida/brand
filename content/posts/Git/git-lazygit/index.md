@@ -1,6 +1,6 @@
 ---
 Title: "Lazygit: Git for Lazy People"
-date: date
+date: 2025-04-13 
 categories:
 - Git
 tags:
