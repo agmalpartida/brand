@@ -111,6 +111,157 @@ By default, containerd calls runc. The runc binary actually spawns the container
 
 ![](assets/k8s-optimization-resources.jpg)
 
+Why do we need Requests & Limits?
+
+- Ensure fair resource sharing between containers.
+- Prevent resource hogging by any container.
+- Help scheduler make informed decisions about where to place pods.
+- Prevent node crashes from overcommitted memory.
+
+Sample YAML:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resource-demo
+spec:
+  containers:
+    - name: busybox
+      image: busybox
+      command: ["sh", "-c", "while true; do echo Hello; sleep 1; done"]
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+```
+
+Explanation:
+
+- 250m means 250 millicores of CPU (¼ core).
+- The container requests 64Mi memory but can't exceed 128Mi.
+
+How Scheduling Works with Requests:
+
+```
+Step 1: You apply the pod
+Step 2: Scheduler looks for a node with >= requested CPU/memory
+Step 3: Pod is scheduled there
+Step 4: During runtime, if pod tries to exceed limit:
+            - For CPU: throttled
+            - For Memory: killed (OOMKilled)
+```
+
+![](assets/index_2025-04-13_20-24-30.png)
+
+Let's check out QoS (Quality of Service) Classes as well, how Kubernetes uses requests and limits to categorize pods, and how that affects scheduling and eviction.
+
+### Kubernetes QoS Classes
+
+Kubernetes assigns Quality of Service classes to pods based on how you set requests and limits for CPU and memory:
+
+![](assets/index_2025-04-13_20-25-42.png)
+
+Examples:
+
+1. Guaranteed Pod (QoS Class: Guaranteed)
+
+```yaml
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "500m"
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+```
+
+2. Burstable Pod (QoS Class: Burstable)
+
+```yaml
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "250m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+```
+
+3. BestEffort Pod (QoS Class: BestEffort)
+
+```yaml
+# No resources section
+```
+
+![](assets/index_2025-04-13_20-27-41.png)
+
+When Node Memory Hits Limit (e.g., High Load)
+
+Eviction Policy Triggered, Kubernetes starts evicting based on QoS priority. 
+
+1️. Pod C (BestEffort) → EVICTED first 
+2️. Pod B or D (Burstable) → May be evicted 
+3️. Pod A (Guaranteed) → Most protected
+
+Example YAML: Pod with Resource Settings
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guaranteed-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    resources:
+      requests:
+        memory: "200Mi"
+        cpu: "500m"
+      limits:
+        memory: "200Mi"
+        cpu: "500m"
+```
+
+This Pod gets Guaranteed QoS class.
+
+Flow:
+
+```yaml
+Client applies pod YAML
+        │
+        ▼
+Pod scheduled on node with enough resources
+        │
+        ▼
+Node allocates CPU & Memory based on "requests"
+        │
+        ▼
+If pod exceeds "limits" → It gets throttled or OOMKilled
+        │
+        ▼
+During pressure → Eviction happens in QoS order:
+BestEffort → Burstable → Guaranteed
+```
+
+Eviction Priority (Important Concept)
+
+When node runs out of memory, Kubernetes evicts pods based on QoS class:
+
+```
+BestEffort → Burstable → Guaranteed
+ (first)                   (last)
+```
+
+So, Guaranteed pods are safest, and BestEffort gets evicted first.
+
+Behavior During Resource Pressure:
+
+
 ## Security
 
 ![](assets/k8s-security.jpg)
