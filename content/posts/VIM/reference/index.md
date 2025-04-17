@@ -26,7 +26,9 @@ showActions: false
 - Symbols: 
   - <Leader>ls : Launch FZF to search for symbols.
   - <Leader>lS : Toggle right sidebar with all symbols. 
-
+  
+- Navigation:
+  - <Leader>va : Visual arround
 
 ## Navigation & Repetition
 

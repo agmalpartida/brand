@@ -36,8 +36,10 @@ REST is an architectural style for designing APIs that uses the principles of th
 
 A resource is any object that the API manages: users, products, orders, etc. Each one has a unique URL.
 
+```
 /products     →  all products  
-/products/42  →  the product with ID 42  
+/products/42  →  the product with ID 42
+```  
 
 Characteristics of a REST API
 

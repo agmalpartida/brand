@@ -68,6 +68,21 @@ spec:
           averageUtilization: 50
 ```
 
+```yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-app
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+```
+
 - Deploying the Metrics Server
 
 Why: HPA needs CPU/memory stats → metrics-server collects and exposes these.
@@ -162,27 +177,6 @@ Eventually:
 - CPU usage spread across them
 - Load goes down
 
-
-### How to Use Automated Cluster Scaling
-
-To implement HPA, you need to define a HorizontalPodAutoscaler resource. Below is an example of how to configure HPA for a deployment:
-
-```yaml
-apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: my-app-hpa
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: my-app
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 50
-```
-
-In this configuration, HPA will maintain CPU utilization around 50% by scaling the number of replicas between 2 and 10.
 
 ## Vertical Pod Autoscaling (VPA)
 
