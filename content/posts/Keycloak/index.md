@@ -40,6 +40,71 @@ Once verified, Keycloak sends your app a token, which is proof that the user is 
 - Your App Lets the User In:
 Your app reads the token and knows who the user is and what they’re allowed to do.
 
+## Account Console
+
+Keycloak users can manage their accounts through the Account Console. They can configure their profiles, add two-factor authentication, include identity provider accounts, and oversee device activity.
+
+Accessing the Account Console
+Procedure
+
+    Make note of the realm name and IP address for the Keycloak server where your account exists.
+
+    In a web browser, enter a URL in this format: server-root/realms/{realm-name}/account.
+
+    Enter your login name and password.
+
+You can also ask for additional scopes when calling the account console URL by setting the scope parameter in this format: server-root/realms/{realm-name}/account?scope=phone.
+
+
+## Features
+
+Single-Sign On
+
+Users authenticate with Keycloak rather than individual applications. This means that your applications don't have to deal with login forms, authenticating users, and storing users. Once logged-in to Keycloak, users don't have to login again to access a different application.
+
+This also applies to logout. Keycloak provides single-sign out, which means users only have to logout once to be logged-out of all applications that use Keycloak.
+
+
+
+Identity Brokering and Social Login
+
+Enabling login with social networks is easy to add through the admin console. It's just a matter of selecting the social network you want to add. No code or changes to your application is required. 
+Keycloak can also authenticate users with existing OpenID Connect or SAML 2.0 Identity Providers. Again, this is just a matter of configuring the Identity Provider through the admin console. 
+Identity Brokering OpenID Connect or SAML 2.0 IdPs
+
+
+User Federation
+
+Keycloak has built-in support to connect to existing LDAP or Active Directory servers. You can also implement your own provider if you have users in other stores, such as a relational database.
+
+
+Admin Console
+
+Through the admin console administrators can centrally manage all aspects of the Keycloak server. 
+
+
+Account Management Console
+https://keycloak.albertogalvez.com/auth/realms/sso/account/
+
+Through the account management console users can manage their own accounts. They can update the profile, change passwords, and setup two-factor authentication.
+
+Users can also manage sessions as well as view history for the account.
+
+If you've enabled social login or identity brokering users can also link their accounts with additional providers to allow them to authenticate to the same account with different identity providers.
+
+
+
+Standard Protocols
+
+Keycloak is based on standard protocols and provides support for OpenID Connect, OAuth 2.0, and SAML.
+
+
+Authorization Services
+
+If role based authorization doesn't cover your needs, Keycloak provides fine-grained authorization services as well. This allows you to manage permissions for all your services from the Keycloak admin console and gives you the power to define exactly the policies you need.
+
+
+
 ## OAuth
 
 [OAuth 2.0](https://datatracker.ietf.org/doc/html/rfc6749) 
@@ -372,6 +437,128 @@ Hasura sends the response back to the frontend application with the requested da
 The frontend application displays the data or action result to the user.
 
 This flow diagram outlines the process of how user requests are fulfilled with an authorization layer connecting Hasura and Keycloak.
+
+
+## Users and Roles
+
+
+Managing user attributes
+
+In Keycloak a user is associated with a set of attributes. These attributes are used to better describe and identify users within Keycloak as well as to pass over additional information about them to applications.
+
+A user profile defines a well-defined schema for representing user attributes and how they are managed within a realm. By providing a consistent view over user information, it allows administrators to control the different aspects on how attributes are managed as well as to make it much easier to extend Keycloak to support additional attributes.
+
+Although the user profile is mainly targeted for attributes that end-users can manage (e.g.: first and last names, phone, etc) it also serves for managing any other metadata you want to associate with your users.
+
+
+The user profile schema or configuration uses a JSON format to represent attributes and their metadata. From the administration console, you are able to manage the configuration by clicking on the Realm Settings on the left side menu and then clicking on the User Profile tab on that page.
+
+Understanding Managed and Unmanaged Attributes
+
+By default, Keycloak will only recognize the attributes defined in your user profile configuration. The server ignores any other attribute not explicitly defined there.
+
+
+
+By being strict about which user attributes can be set to your users, as well as how their values are validated, Keycloak can add another defense barrier to your realm and help you to prevent unexpected attributes and values associated to your users.
+
+That said, user attributes can be categorized as follows:
+
+    Managed. These are attributes controlled by your user profile, to which you want to allow end-users and administrators to manage from any user profile context. For these attributes, you want complete control on how and when they are managed.
+
+    Unmanaged. These are attributes you do not explicitly define in your user profile so that they are completely ignored by Keycloak, by default.
+
+
+Assigning permissions using roles and groups
+
+Roles and groups have a similar purpose, which is to give users access and permissions to use applications. Groups are a collection of users to which you apply roles and attributes. Roles define specific applications permissions and access control.
+
+There is a global namespace for roles and each client also has its own dedicated namespace where roles can be defined.
+
+Client roles
+
+Client roles are namespaces dedicated to clients. Each client gets its own namespace. Client roles are managed under the Roles tab for each client. You interact with this UI the same way you do for realm-level roles.
+
+Converting a role to a composite role
+
+Any realm or client level role can become a composite role. A composite role is a role that has one or more additional roles associated with it. When a composite role is mapped to a user, the user gains the roles associated with the composite role. This inheritance is recursive so users also inherit any composite of composites. However, we recommend that composite roles are not overused.
+
+Using default roles
+
+Use default roles to automatically assign user role mappings when a user is created or imported through Identity Brokering.
+
+https://www.keycloak.org/docs/latest/server_admin/index.html#_identity_broker
+
+Procedure
+
+    Click Realm settings in the menu.
+
+    Click the User registration tab.
+
+Role scope mappings
+
+On creation of an OIDC access token or SAML assertion, the user role mappings become claims within the token or assertion. Applications use these claims to make access decisions on the resources controlled by the application. Keycloak digitally signs access tokens and applications reuse them to invoke remotely secured REST services. However, these tokens have an associated risk. An attacker can obtain these tokens and use their permissions to compromise your networks. To prevent this situation, use Role Scope Mappings.
+
+Role Scope Mappings limit the roles declared inside an access token. When a client requests user authentication, the access token it receives contains only the role mappings that are explicitly specified for the client’s scope. The result is that the permissions of each individual access token are limited instead of giving the client access to all the user’s permissions.
+
+Groups compared to roles
+
+Groups and roles have some similarities and differences. In Keycloak, groups are a collection of users to which you apply roles and attributes. Roles define types of users, and applications assign permissions and access control to roles.
+
+Composite Roles are similar to Groups as they provide the same functionality. The difference between them is conceptual. Composite roles apply the permission model to a set of services and applications. Use composite roles to manage applications and services.
+
+Groups focus on collections of users and their roles in an organization. Use groups to manage users.
+
+
+## Integrating identity providers
+
+An Identity Broker is an intermediary service connecting service providers with identity providers. The identity broker creates a relationship with an external identity provider to use the provider’s identities to access the internal services the service provider exposes.
+
+From a user perspective, identity brokers provide a user-centric, centralized way to manage identities for security domains and realms. You can link an account with one or more identities from identity providers or create an account based on the identity information from them.
+
+Keycloak bases identity providers on the following protocols:
+
+    SAML v2.0
+
+    OpenID Connect v1.0
+
+    OAuth v2.0
+
+## Realms
+
+Managing access to realm resources
+
+Each realm created on the Keycloak has a dedicated Admin Console from which that realm can be managed. The master realm is a special realm that allows admins to manage more than one realm on the system. You can also define fine-grained access to users in different realms to manage the server.
+
+Master realm access control
+
+The master realm in Keycloak is a special realm and treated differently than other realms. Users in the Keycloak master realm can be granted permission to manage zero or more realms that are deployed on the Keycloak server. When a realm is created, Keycloak automatically creates various roles that grant permissions to access that new realm. Access to The Admin Console and Admin REST endpoints can be controlled by mapping these roles to users in the master realm. It’s possible to create multiple superusers, as well as users that can only manage specific realms.
+
+Global roles
+
+There are two realm-level roles in the master realm. These are:
+
+    admin
+
+    create-realm
+
+Users with the admin role are superusers and have full access to manage any realm on the server. Users with the create-realm role are allowed to create new realms. They will be granted full access to any new realm they create.
+
+Realm specific roles
+
+Admin users within the master realm can be granted management privileges to one or more other realms in the system. Each realm in Keycloak is represented by a client in the master realm. The name of the client is <realm name>-realm. These clients each have client-level roles defined which define varying level of access to manage an individual realm.
+
+Dedicated realm admin consoles
+
+Each realm has a dedicated Admin Console that can be accessed by going to the url /admin/{realm-name}/console. Users within that realm can be granted realm management permissions by assigning specific user role mappings.
+
+Each realm has a built-in client called realm-management. You can view this client by going to the Clients left menu item of your realm. This client defines client-level roles that specify permissions that can be granted to manage the realm.
+
+Managing Policies
+
+The Policies tab allows administrators to define conditions using different access control methods to determine whether a permission should be granted to an administrator attempting to perform operations on a realm resource. When managing permissions, you must associate at least a single policy to grant or deny access to a realm resource.
+
+Policies are basically conditions that will evaluate to either a GRANT or a DENY. Their outcome will decide whether a permission should be granted or denied.
+A permission is only granted if all its associated policies evaluate to a GRANT. Otherwise, the permission is denied and a realm administrator will not be able to access the protected resource.
 
 
 
