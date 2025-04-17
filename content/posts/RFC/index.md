@@ -25,7 +25,7 @@ RFCs (Request for Comments) are technical documents published by the IETF (Inter
 
 ---
 
-## 📄 Example: RFC 6749
+## Example: RFC 6749
 
 - This RFC defines the **OAuth 2.0 Authorization Framework**.
 - It specifies how an application can obtain limited access to a user's resources without handling their credentials directly.
@@ -33,7 +33,7 @@ RFCs (Request for Comments) are technical documents published by the IETF (Inter
 
 ---
 
-## 🧠 Who creates RFCs?
+## Who creates RFCs?
 
 Mainly the **IETF**, although organizations like the **IRTF** or the **IAB** can also produce them.
 
@@ -41,7 +41,7 @@ Anyone can propose an RFC, but the formal process usually involves **IETF workin
 
 ---
 
-## 🛠️ RFC Creation Process
+## RFC Creation Process
 
 1. **Idea or Need**  
    Someone (usually in an IETF working group) identifies a technical issue or need that requires a formal specification.
@@ -66,7 +66,7 @@ Anyone can propose an RFC, but the formal process usually involves **IETF workin
 
 ---
 
-## 📦 Types of RFCs
+## Types of RFCs
 
 Not all RFCs are standards. They can be classified as:
 
@@ -77,7 +77,7 @@ Not all RFCs are standards. They can be classified as:
 
 ---
 
-## 🌱 Maturity Levels of Standards
+## Maturity Levels of Standards
 
 For **Standards Track** RFCs, there are three levels:
 
@@ -87,7 +87,7 @@ For **Standards Track** RFCs, there are three levels:
 
 ---
 
-## ✅ Real Example: OAuth 2.0 (RFC 6749)
+## Real Example: OAuth 2.0 (RFC 6749)
 
 - **Idea**: A simpler and more secure replacement for OAuth 1.0 was needed.
 - **Drafts**: The *OAuth WG* of the IETF began publishing drafts like `draft-ietf-oauth-v2`.
@@ -96,7 +96,7 @@ For **Standards Track** RFCs, there are three levels:
 - **Approval**: The **IESG** approved the draft in October 2012.
 - **Publication**: It was published as **RFC 6749**.
 
-### 🔧 Follow-up RFCs and Extensions
+### Follow-up RFCs and Extensions
 
 - **RFC 6750** – Bearer Tokens  
 - **RFC 6819** – Security Considerations  
@@ -105,8 +105,8 @@ For **Standards Track** RFCs, there are three levels:
 
 ---
 
-## 🔗 Useful Resources
+## Useful Resources
 
-- 🔍 [IETF Datatracker](https://datatracker.ietf.org/) — Track drafts and RFCs  
-- 📘 [RFC Editor](https://www.rfc-editor.org/) — Official RFC library  
-- 🧑‍💻 [IETF Tools](https://tools.ietf.org/) — Tools and active working groups
+- [IETF Datatracker](https://datatracker.ietf.org/) — Track drafts and RFCs  
+- [RFC Editor](https://www.rfc-editor.org/) — Official RFC library  
+- [IETF Tools](https://tools.ietf.org/) — Tools and active working groups

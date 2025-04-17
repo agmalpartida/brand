@@ -42,6 +42,7 @@ Be sure to upgrade one node at a time and check that it's healthy before moving 
 - Check versions:
   - Client: `talosctl version --client`
   - Server: `kubectl get node -o wide` (OS-IMAGE column)
+  
 - Get a new Talos OS image from the factory: https://factory.talos.dev
   - Make sure to add any existing extensions you're using such is `iscsi-tools`
   - Copy the image string under the "Upgrading Talos Image" header. In my case this looks like `factory.talos.dev/installer/88d1f7a5c4f1d3aba7df787c448c1d3d008ed29cfb34af53fa0df4336a56040b:v1.9.2`
@@ -51,6 +52,30 @@ Be sure to upgrade one node at a time and check that it's healthy before moving 
   - `--preserve`: Don't wipe extraMounts if applicable. I default to using this unless I have a specific reason to wipe additional mounts.
 - Repeat the upgrade command for each node, one at a time, until all nodes have been upgraded.
 
+```sh
+➜  talosctl -n 192.168.1.71 version
+
+Client:
+        Tag:         v1.7.6
+        SHA:         ae67123a
+        Built:
+        Go version:  go1.22.5
+        OS/Arch:     darwin/amd64
+Server:
+        NODE:        192.168.1.71
+        Tag:         v1.7.6
+        SHA:         ae67123a
+        Built:
+        Go version:  go1.22.5
+        OS/Arch:     linux/arm64
+        Enabled:     RBAC
+
+
+❯  talosctl upgrade --nodes 192.168.1.71 --image ghcr.io/siderolabs/installer:v1.9.5
+◲ watching nodes: [192.168.1.71]
+    * 192.168.1.71: task: removeAllPods action: START
+
+```
 In my homelab, I am comfortable blasting through upgrades with a for loop, so my upgrade command looks like this:
 ```bash
 for node in 11 12 13 21 22 23 31 32 33; do talosctl upgrade -n 10.0.50.$node --image factory.talos.dev/installer/88d1f7a5c4f1d3aba7df787c448c1d3d008ed29cfb34af53fa0df4336a56040b:v1.9.2 --preserve; done

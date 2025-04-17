@@ -302,118 +302,55 @@ Required actions are actions a user must perform during the authentication proce
 Authentication flows are work flows a user must perform when interacting with certain aspects of the system. A login flow can define what credential types are required. A registration flow defines what profile information a user must enter and whether something like reCAPTCHA must be used to filter out bots. Credential reset flow defines what actions a user must do before they can reset their password.
 
 ---
-Set Up a Realm
+### Set Up a Realm
 
     In the Keycloak admin console, log in with the default administrator credentials (admin/admin).
     Create a new realm for your application by clicking on “Add Realm” and provide a unique name for your realm.
     Configure the realm settings, such as token lifespan, SSO settings, etc., according to your application’s requirements.
 
-Create a Client for Your Application
+### Create a Client for Your Application
 
     Inside your realm, navigate to the “Clients” section and click on “Create” to add a new client.
     Provide a unique client ID and choose “confidential” as the client’s access type.
     Configure the allowed redirect URLs, web origins, and base URL for your application.
 
-Define User Roles
+### Define User Roles
 
     In the Keycloak admin console, go to the “Roles” section and create roles that correspond to different levels of access within your application.
     For each role, specify the permissions it grants to users.
 
-Integrate Keycloak with Your Application
+### Integrate Keycloak with Your Application
 
     Add the Keycloak JavaScript adapter to your frontend application by including the Keycloak JavaScript library in your HTML files.
     Configure the adapter with your client ID and Keycloak server URL.
     Initialize the Keycloak adapter in your application to handle authentication and session management.
 
-Implement Login and Logout Functionality
+### Implement Login and Logout Functionality
 
     Create a login button in your application that redirects users to the Keycloak login page.
     Handle the authentication callback from Keycloak and set up the user session in your application after successful login.
     Implement a logout mechanism that redirects users to the Keycloak logout page to terminate their session.
 
-Secure Resources Based on User Roles
+### Secure Resources Based on User Roles
 
     Use the Keycloak adapter to enforce role-based access control for your application’s resources.
     Protect specific endpoints or components by checking the user’s assigned roles before granting access.
 
-Enable Single Sign-On (SSO)
+### Enable Single Sign-On (SSO)
 
     In the Keycloak admin console, go to the “Realm Settings” and enable Single Sign-On (SSO) for your realm.
     Configure your applications to participate in the SSO realm to enable users to log in once and access multiple applications seamlessly.
 
-Customize the Login and Registration Flow (Optional)
+### Customize the Login and Registration Flow (Optional)
 
     Customize the Keycloak login and registration themes to match your application’s branding and user experience.
     Add your own logo, colors, and styles to create a cohesive user interface.
 
 
-Connect 3rd party with Keycloak
-
-we’ll see how we use Keycloak for Authentication and Authorization. Below are the steps we keep in mind when we deal with keycloak.
-
-Flow Diagram Steps:
-
-    User Request: A user initiates a request to access data or perform an action in the frontend application, which sends a request to the Hasura GraphQL API.
-    Hasura GraphQL API: Hasura receives the GraphQL request from the frontend and processes it.
-    Auth Webhook Check:
-
-Before processing the request, Hasura checks for the presence of an Authorization header containing a valid JWT token. If the token is not present or invalid, Hasura redirects the user to Keycloak for authentication.
-
-    Keycloak Authentication:
-
-The user is redirected to the Keycloak login page to enter their credentials. After successful authentication, Keycloak generates a JWT access token.
-
-    JWT Token Exchange:
-
-Keycloak sends the JWT access token back to the frontend application.
-
-    Frontend Request with JWT:
-
-The frontend includes the JWT access token in the Authorization header and re-sends the original request to the Hasura GraphQL API.
-
-    Hasura Auth Webhook:
-
-Hasura forwards the request to the Auth Webhook, passing the JWT token in the request header.
-
-    Auth Webhook Validation:
-
-The Auth Webhook receives the request and validates the JWT token by sending it to Keycloak’s token validation endpoint.
-
-    Token Validation with Keycloak:
-
-The Auth Webhook sends the JWT token to Keycloak for validation. Keycloak responds with the token status (active or inactive).
-
-    Extract Roles:
-
-If the token is active, the Auth Webhook extracts the user’s roles from the JWT token.
-
-    Authorize Request:
-
-The Auth Webhook responds to Hasura with the user’s roles, which include the necessary permissions for the requested action.
-
-    Hasura Authorization:
-
-Hasura receives the roles from the Auth Webhook and validates the user’s permissions against the requested action.
-
-    Request Fulfillment:
-
-If the user is authorized, Hasura processes the original request and retrieves data or performs the action requested.
-
-    Response to Frontend:
-
-Hasura sends the response back to the frontend application with the requested data or action result.
-
-    User Interaction:
-
-The frontend application displays the data or action result to the user.
-
-This flow diagram outlines the process of how user requests are fulfilled with an authorization layer connecting Hasura and Keycloak.
-
-
+-- 
 ## Users and Roles
 
-
-Managing user attributes
+### Managing user attributes
 
 In Keycloak a user is associated with a set of attributes. These attributes are used to better describe and identify users within Keycloak as well as to pass over additional information about them to applications.
 
@@ -421,57 +358,48 @@ A user profile defines a well-defined schema for representing user attributes an
 
 Although the user profile is mainly targeted for attributes that end-users can manage (e.g.: first and last names, phone, etc) it also serves for managing any other metadata you want to associate with your users.
 
-
 The user profile schema or configuration uses a JSON format to represent attributes and their metadata. From the administration console, you are able to manage the configuration by clicking on the Realm Settings on the left side menu and then clicking on the User Profile tab on that page.
 
-Understanding Managed and Unmanaged Attributes
+### Understanding Managed and Unmanaged Attributes
 
 By default, Keycloak will only recognize the attributes defined in your user profile configuration. The server ignores any other attribute not explicitly defined there.
-
-
 
 By being strict about which user attributes can be set to your users, as well as how their values are validated, Keycloak can add another defense barrier to your realm and help you to prevent unexpected attributes and values associated to your users.
 
 That said, user attributes can be categorized as follows:
 
-    Managed. These are attributes controlled by your user profile, to which you want to allow end-users and administrators to manage from any user profile context. For these attributes, you want complete control on how and when they are managed.
+- Managed. These are attributes controlled by your user profile, to which you want to allow end-users and administrators to manage from any user profile context. For these attributes, you want complete control on how and when they are managed.
 
-    Unmanaged. These are attributes you do not explicitly define in your user profile so that they are completely ignored by Keycloak, by default.
+- Unmanaged. These are attributes you do not explicitly define in your user profile so that they are completely ignored by Keycloak, by default.
 
-
-Assigning permissions using roles and groups
+### Assigning permissions using roles and groups
 
 Roles and groups have a similar purpose, which is to give users access and permissions to use applications. Groups are a collection of users to which you apply roles and attributes. Roles define specific applications permissions and access control.
 
 There is a global namespace for roles and each client also has its own dedicated namespace where roles can be defined.
 
-Client roles
+### Client roles
 
 Client roles are namespaces dedicated to clients. Each client gets its own namespace. Client roles are managed under the Roles tab for each client. You interact with this UI the same way you do for realm-level roles.
 
-Converting a role to a composite role
+### Converting a role to a composite role
 
 Any realm or client level role can become a composite role. A composite role is a role that has one or more additional roles associated with it. When a composite role is mapped to a user, the user gains the roles associated with the composite role. This inheritance is recursive so users also inherit any composite of composites. However, we recommend that composite roles are not overused.
 
-Using default roles
+### Using default roles
 
-Use default roles to automatically assign user role mappings when a user is created or imported through Identity Brokering.
+Use default roles to automatically assign user role mappings when a user is created or imported through [Identity Brokering](https://www.keycloak.org/docs/latest/server_admin/index.html#_identity_broker).
 
-https://www.keycloak.org/docs/latest/server_admin/index.html#_identity_broker
+- Click Realm settings in the menu.
+- Click the User registration tab.
 
-Procedure
-
-    Click Realm settings in the menu.
-
-    Click the User registration tab.
-
-Role scope mappings
+### Role scope mappings
 
 On creation of an OIDC access token or SAML assertion, the user role mappings become claims within the token or assertion. Applications use these claims to make access decisions on the resources controlled by the application. Keycloak digitally signs access tokens and applications reuse them to invoke remotely secured REST services. However, these tokens have an associated risk. An attacker can obtain these tokens and use their permissions to compromise your networks. To prevent this situation, use Role Scope Mappings.
 
 Role Scope Mappings limit the roles declared inside an access token. When a client requests user authentication, the access token it receives contains only the role mappings that are explicitly specified for the client’s scope. The result is that the permissions of each individual access token are limited instead of giving the client access to all the user’s permissions.
 
-Groups compared to roles
+### Groups compared to roles
 
 Groups and roles have some similarities and differences. In Keycloak, groups are a collection of users to which you apply roles and attributes. Roles define types of users, and applications assign permissions and access control to roles.
 
@@ -479,7 +407,7 @@ Composite Roles are similar to Groups as they provide the same functionality. Th
 
 Groups focus on collections of users and their roles in an organization. Use groups to manage users.
 
-
+---
 ## Integrating identity providers
 
 An Identity Broker is an intermediary service connecting service providers with identity providers. The identity broker creates a relationship with an external identity provider to use the provider’s identities to access the internal services the service provider exposes.
@@ -488,11 +416,9 @@ From a user perspective, identity brokers provide a user-centric, centralized wa
 
 Keycloak bases identity providers on the following protocols:
 
-    SAML v2.0
-
-    OpenID Connect v1.0
-
-    OAuth v2.0
+- SAML v2.0
+- OpenID Connect v1.0
+- OAuth v2.0
 
 ## Realms
 
@@ -504,27 +430,26 @@ Master realm access control
 
 The master realm in Keycloak is a special realm and treated differently than other realms. Users in the Keycloak master realm can be granted permission to manage zero or more realms that are deployed on the Keycloak server. When a realm is created, Keycloak automatically creates various roles that grant permissions to access that new realm. Access to The Admin Console and Admin REST endpoints can be controlled by mapping these roles to users in the master realm. It’s possible to create multiple superusers, as well as users that can only manage specific realms.
 
-Global roles
+- Global roles
 
 There are two realm-level roles in the master realm. These are:
 
-    admin
-
-    create-realm
+admin
+create-realm
 
 Users with the admin role are superusers and have full access to manage any realm on the server. Users with the create-realm role are allowed to create new realms. They will be granted full access to any new realm they create.
 
-Realm specific roles
+- Realm specific roles
 
 Admin users within the master realm can be granted management privileges to one or more other realms in the system. Each realm in Keycloak is represented by a client in the master realm. The name of the client is <realm name>-realm. These clients each have client-level roles defined which define varying level of access to manage an individual realm.
 
-Dedicated realm admin consoles
+- Dedicated realm admin consoles
 
 Each realm has a dedicated Admin Console that can be accessed by going to the url /admin/{realm-name}/console. Users within that realm can be granted realm management permissions by assigning specific user role mappings.
 
 Each realm has a built-in client called realm-management. You can view this client by going to the Clients left menu item of your realm. This client defines client-level roles that specify permissions that can be granted to manage the realm.
 
-Managing Policies
+- Managing Policies
 
 The Policies tab allows administrators to define conditions using different access control methods to determine whether a permission should be granted to an administrator attempting to perform operations on a realm resource. When managing permissions, you must associate at least a single policy to grant or deny access to a realm resource.
 
