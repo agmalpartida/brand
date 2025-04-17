@@ -279,4 +279,104 @@ export RESPONSE=$(curl -v -k -X POST \
 -d scope="openid profile email name groups" | jq '.')
 ```
 
+Extract the tokens:
+
+```sh
+export ID_TOKEN=$(echo $RESPONSE| jq -r '.id_token')
+export REFRESH_TOKEN=$(echo $RESPONSE| jq -r '.refresh_token')
+export ACCESS_TOKEN=$(echo $RESPONSE| jq -r '.access_token')
+```
+
+Now we can optionally check if we received all the information that we need by querying the user info endpoint with the access token.
+
+Afterwards we do not need the access token anymore and we could discard it.
+
+```sh
+curl -s -H "Content-Type: application/x-www-form-urlencoded" \
+-H "Authorization: Bearer ${ACCESS_TOKEN}" \
+"${OIDC_USERINFO_ENDPOINT}" | jq '.'
+
+{
+  "sub": "a42c4585-916d-4e9e-a068-ba1bbceb8887",
+  "email_verified": true,
+  "name": "k8suser",
+  "groups": [
+    "k8s"
+  ],
+  "preferred_username": "k8suser",
+  "given_name": "k8suser",
+  "family_name": "KC",
+  "email": "k8suser@rieragalm.es"
+}
+```
+
+Note: Check that name and groups appear and they are populated properly!
+
+Gotchas
+
+    You forgot to make the claims default or you are not requesting those scopes, so there are not available in the ID Token
+
+Kubectl: create a set of credentials
+
+Now that we have the tokens, let’s create a new set of kubectl credentials!
+
+```sh
+kubectl config set-credentials ${K8S_USER} \
+   --auth-provider=oidc \
+   --auth-provider-arg=idp-issuer-url=${OIDC_ISSUER_URL} \
+   --auth-provider-arg=client-id=${OIDC_CLIENT_ID} \
+   --auth-provider-arg=refresh-token=${REFRESH_TOKEN} \
+   --auth-provider-arg=id-token=${ID_TOKEN}
+```
+
+Now we have to create a new configuration context to use this newly created user in an existing cluster:
+
+```sh
+kubectl config set-context ${K8S_USER} \
+--cluster=minikube \
+--user=${K8S_USER} \
+--namespace=default
+```
+
+And finally we need to use it:
+
+```sh
+kubectl config use-context ${K8S_USER}
+```
+
+Kubectl: check the access
+
+We will now check our identity and we will try to perform a `get` operation to get the pods on the cluster:
+
+```sh
+kubectl auth whoami
+ATTRIBUTE   VALUE
+Username    k8suser
+Groups      [k8s system:authenticated]
+
+
+kubectl auth can-i get pods
+yes
+
+kubectl auth can-i get deployments.apps
+no
+```
+
+```sh
+ubectl get pods -A
+NAMESPACE     NAME                                      READY   STATUS    RESTARTS        AGE
+kube-system   coredns-5dd5756b68-7xkmd                  1/1     Running   2 (2d18h ago)   2d23h
+kube-system   etcd-minikube-docker                      1/1     Running   3 (2d18h ago)   2d23h
+kube-system   kube-apiserver-minikube-docker            1/1     Running   1 (2d18h ago)   2d22h
+kube-system   kube-controller-manager-minikube-docker   1/1     Running   3 (2d18h ago)   2d23h
+kube-system   kube-proxy-cbjf9                          1/1     Running   2 (2d18h ago)   2d23h
+kube-system   kube-scheduler-minikube-docker            1/1     Running   3 (2d18h ago)   2d23h
+kube-system   storage-provisioner                       1/1     Running   5 (2d18h ago)   2d23h
+```
+
+```sh
+kubectl get deployments.apps
+Error from server (Forbidden): deployments.apps is forbidden: User "k8suser" cannot list resource "deployments" in API group "apps" in the namespace "default"
+```
+
 
