@@ -1,52 +1,133 @@
 ---
-Title: "Kubernetes: CRD, Custom Resource Definition"
-date: 2025-04-05
+Title: "Kubernetes Controllers"
+date: 2025-04-17
 categories:
 - Kubernetes
 tags:
 - k8s
 keywords:
-- crd
+- controller
 summary: 
 comments: false
 showMeta: false
 showActions: false
 ---
 
-# Create your own CRD
+# What is a Replication Controller?
 
-## CRD (Custom Resource Definition)
+A Replication Controller (RC) ensures that a specified number of pod replicas are running at all times. It continuously monitors the cluster and if a pod fails, it will replace it to maintain the desired state.
 
-This defines how we want our custom Kubernetes objects to look and behave.
+Features
 
-The name of the CRD must follow this format: <plural-name>.<api-group>
-
-Example: `albertocrds.crds.albertogalvez.com` 
-    
-To list existing CRDs:
-
-```sh
-kubectl get crds
-```
-
-In the custom resource manifest, you must specify:
+    Ensures availability of pods by replacing failed ones.
+    Basic scaling of pods by changing the replica count.
+    Legacy Component: Being replaced by ReplicaSets in modern Kubernetes due to limited functionality.
 
 ```yaml
-apiVersion: crds.albertogalvez.com/v1
-kind: Albertocrds
-...
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: my-rc
+spec:
+  replicas: 3
+  selector:
+    app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
 ```
-
-## Controller
-
-Now we create our controller, which is simply an application running continuously in Kubernetes, listening for changes to our custom resources.
-
-There are libraries available to build controllers in various programming languages.
-
-In Python, for example, you can use the [kopf](https://github.com/nolar/kopf) library.
-
-Example execution:
 
 ```sh
-kopf run /path/to/controller.py
+kubectl get rc
 ```
+
+## What is a ReplicaSet?
+
+A ReplicaSet (RS) is the newer, more advanced version of Replication Controllers. It provides additional functionality and is often managed by Deployments.
+Features
+
+    Supports set-based label selectors, allowing complex filtering of pods.
+    Works seamlessly with Deployments for rolling updates and rollbacks.
+    Dynamic scaling support by modifying the number of replicas.
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-rs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+```
+
+```sh
+kubectl get rs
+```
+
+## What is a Deployment?
+
+A Deployment is the most common way to manage ReplicaSets. It provides features like rolling updates, rollbacks, and scaling.
+Features
+
+    Manages ReplicaSets to maintain desired state of applications.
+    Supports Rolling Updates & Rollbacks to ensure zero downtime during updates.
+    Automatically scales pods based on defined replicas.
+    Provides self-healing capabilities to replace unhealthy pods.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+```
+
+Check Deployment Status:
+
+kubectl rollout status deployment/my-deployment
+
+View Deployment History:
+
+kubectl rollout history deployment/my-deployment
+
+Rollback to Previous Version:
+
+kubectl rollout undo deployment/my-deployment
+
+Scale the Deployment:
+
+kubectl scale deployment my-deployment --replicas=5
+
+
+Summary
+
+    Replication Controller: Ensures availability of a specified number of pods.
+    ReplicaSet: Improved version of RC with better label selection and scaling support.
+    Deployment: Manages ReplicaSets, supports rolling updates, rollbacks, and scaling.
