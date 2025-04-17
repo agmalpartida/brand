@@ -88,8 +88,7 @@ Keycloak is based on standard protocols and provides support for OpenID Connect,
 
 If role based authorization doesn't cover your needs, Keycloak provides fine-grained authorization services as well. This allows you to manage permissions for all your services from the Keycloak admin console and gives you the power to define exactly the policies you need.
 
-
-
+---
 ## OAuth
 
 [OAuth 2.0](https://datatracker.ietf.org/doc/html/rfc6749) 
@@ -100,48 +99,58 @@ OAuth is a protocol that lets users give one app access to their data in another
 
 Example: When you log in to a service using “Sign in with Google,” you’re using OAuth.
 
-    You click “Sign in with Google.”
-    Google asks for your permission to share your email with the app.
-    Once you agree, Google sends a token to the app, which acts as proof that you’re authenticated.
+1. You click “Sign in with Google.”
+2. Google asks for your permission to share your email with the app.
+3. Once you agree, Google sends a token to the app, which acts as proof that you’re authenticated.
 
 How OAuth Works (Simple Steps):
 
-    You Request Access:
-    You open an app (e.g., a calendar app) and click “Connect with Google.”
-    The App Redirects You to Google:
-    Instead of asking for your password, the app sends you to Google, where you log in securely.
-    You Grant Permission:
-    Google shows you a screen asking, “This app wants to access your calendar. Allow?” You click “Allow.”
-    Google Sends a Token to the App:
-    Once you allow, Google gives the app a token. This token is like a temporary key that allows the app to access your calendar without knowing your password.
-    The App Uses the Token:
-    The app uses the token to get your calendar data (but can’t do anything else, like sending emails).
+- You Request Access:
+You open an app (e.g., a calendar app) and click “Connect with Google.”
 
+- The App Redirects You to Google:
+Instead of asking for your password, the app sends you to Google, where you log in securely.
+
+- You Grant Permission:
+Google shows you a screen asking, “This app wants to access your calendar. Allow?” You click “Allow.”
+
+- Google Sends a Token to the App:
+Once you allow, Google gives the app a token. This token is like a temporary key that allows the app to access your calendar without knowing your password.
+
+- The App Uses the Token:
+The app uses the token to get your calendar data (but can’t do anything else, like sending emails).
+
+---
 ## SAML
 
 SAML (Security Assertion Markup Language) is another protocol for authentication, primarily used in enterprise settings.
 
 While OAuth focuses on giving apps access to data, SAML is about securely transferring login credentials between a user’s identity provider (IdP) and the app they’re trying to access.
 
-    You try to access an internal company app.
-    The app redirects you to your company’s IdP (e.g., Microsoft Active Directory).
-    You log in once, and the IdP tells the app, “This user is authenticated.”
+1. You try to access an internal company app.
+2. The app redirects you to your company’s IdP (e.g., Microsoft Active Directory).
+3. You log in once, and the IdP tells the app, “This user is authenticated.”
 
 SAML uses XML for its communication, which makes it different from OAuth.
 
 How SAML Works (Simple Steps):
 
-    You Try to Access an App (Service Provider):
-    You open an app like Slack and click “Login.”
-    The App Redirects You to Your Company’s Login Page (Identity Provider):
-    Slack says, “I don’t know who you are. Please log in through your company’s system.”
-    You Log in with Your Company Credentials:
-    You enter your username and password on your company’s login page.
-    Your Company Confirms Your Identity:
-    Once you’re authenticated, your company sends a secure message (called an assertion) back to Slack saying, “This user is verified.”
-    You Get Access to the App:
-    Slack trusts the assertion and lets you in without asking for a password again.
+- You Try to Access an App (Service Provider):
+You open an app like Slack and click “Login.”
 
+- The App Redirects You to Your Company’s Login Page (Identity Provider):
+Slack says, “I don’t know who you are. Please log in through your company’s system.”
+
+- You Log in with Your Company Credentials:
+You enter your username and password on your company’s login page.
+
+- Your Company Confirms Your Identity:
+Once you’re authenticated, your company sends a secure message (called an assertion) back to Slack saying, “This user is verified.”
+
+- You Get Access to the App:
+Slack trusts the assertion and lets you in without asking for a password again.
+
+---
 ## SSO
 
 SSO means logging in once to access multiple apps without logging in again.
@@ -150,20 +159,24 @@ Example: When you log in to Gmail, you’re also logged into Google Drive, YouTu
 
 How SSO Works:
 
-    It uses either OAuth, SAML, or other protocols to share authentication across apps.
-    It’s especially helpful in workplaces, where employees use one login for multiple tools like Slack, Jira, and Salesforce.
+- It uses either OAuth, SAML, or other protocols to share authentication across apps.
+- It’s especially helpful in workplaces, where employees use one login for multiple tools like Slack, Jira, and Salesforce.
 
 Here’s how all these pieces fit together in a practical scenario:
 
-    A user opens a web application.
-    The app redirects the user to Keycloak for authentication.
-    Keycloak verifies the user’s credentials.
-    a) If the app uses OAuth, Keycloak issues an access token.
-    b) If the app uses SAML, Keycloak sends a SAML assertion.
-    The user gains access to the application.
-    The user navigates to another app. This app redirects to Keycloak.
-    Keycloak recognizes the user’s session and grants access without requiring a new login.
+- A user opens a web application.
+The app redirects the user to Keycloak for authentication.
 
+- Keycloak verifies the user’s credentials.
+
+  a) If the app uses OAuth, Keycloak issues an access token.
+  b) If the app uses SAML, Keycloak sends a SAML assertion.
+  
+- The user gains access to the application.
+- The user navigates to another app. This app redirects to Keycloak.
+- Keycloak recognizes the user’s session and grants access without requiring a new login.
+
+---
 ## OpenID Connect
 
 OpenID Connect (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers
@@ -173,147 +186,120 @@ OAuth 2.0 is a framework for building authorization protocols and is incomplete.
 
 In general, OIDC implements two use cases. The first case is an application requesting that a Keycloak server authenticates a user. Upon successful login, the application receives an identity token and an access token. The identity token contains user information including user name, email, and profile information. The realm digitally signs the access token which contains access information (such as user role mappings) that applications use to determine the resources users can access in the application.
 
-
-
 The second use case is a client accessing remote services.
 
-    The client requests an access token from Keycloak to invoke on remote services on behalf of the user.
+- The client requests an access token from Keycloak to invoke on remote services on behalf of the user.
 
-    Keycloak authenticates the user and asks the user for consent to grant access to the requesting client.
+- Keycloak authenticates the user and asks the user for consent to grant access to the requesting client.
 
-    The client receives the access token which is digitally signed by the realm.
+- The client receives the access token which is digitally signed by the realm.
 
-    The client makes REST requests on remote services using the access token.
+- The client makes REST requests on remote services using the access token.
 
-    The remote REST service extracts the access token.
+- The remote REST service extracts the access token.
 
-    The remote REST service verifies the tokens signature.
+- The remote REST service verifies the tokens signature.
 
-    The remote REST service decides, based on access information within the token, to process or reject the request.
-
-
-    Your apps are integrated with OIDC with Keycloak (No ROPC grant)
-    SSO means having an active IdP session cookie
-
-    The system 1 (client 1) performs a standard OIDC federation, the user completes the authn mechanism and then, the system 1 gets the tokens, and you have an IdP session :cookie:
-    The system 2 (client 2) performs a standard OIDC federation but you achieve SSO because you have an active IdP session :cookie:, and the system 2 obtains NEW tokens
+- The remote REST service decides, based on access information within the token, to process or reject the request.
 
 
+SSO means having an active IdP session cookie
 
+- The system 1 (client 1) performs a standard OIDC federation, the user completes the authn mechanism and then, the system 1 gets the tokens, and you have an IdP session :cookie:
+- The system 2 (client 2) performs a standard OIDC federation but you achieve SSO because you have an active IdP session :cookie:, and the system 2 obtains NEW tokens
+
+---
 ## Core concepts and terms
 
 Consider these core concepts and terms before attempting to use Keycloak to secure your web applications and REST services.
 
-composite roles
+- composite roles
 
-    A composite role is a role that can be associated with other roles. For example a superuser composite role could be associated with the sales-admin and order-entry-admin roles. If a user is mapped to the superuser role they also inherit the sales-admin and order-entry-admin roles.
+A composite role is a role that can be associated with other roles. For example a superuser composite role could be associated with the sales-admin and order-entry-admin roles. If a user is mapped to the superuser role they also inherit the sales-admin and order-entry-admin roles.
 
+- [realms](https://www.keycloak.org/docs/latest/server_admin/index.html#_per_realm_admin_permissions) 
 
-realms
-
-    A realm manages a set of users, credentials, roles, and groups. A user belongs to and logs into a realm. Realms are isolated from one another and can only manage and authenticate the users that they control.
+A realm manages a set of users, credentials, roles, and groups. A user belongs to and logs into a realm. Realms are isolated from one another and can only manage and authenticate the users that they control.
 Master realm - This realm was created for you when you first started Keycloak. It contains the administrator account you created at the first login. Use the master realm only to create and manage the realms in your system.
 
 if you want to disable the master realm and define administrator accounts within any new realm you create. Each realm has its own dedicated Admin Console that you can log into with local accounts.
 
-https://www.keycloak.org/docs/latest/server_admin/index.html#_per_realm_admin_permissions
+Configuring email for a realm: Keycloak sends emails to users to verify their email addresses, when they forget their passwords, or when an administrator needs to receive notifications about a server event. To enable Keycloak to send emails, you provide Keycloak with your SMTP server settings.
 
+Click Realm settings in the menu.
+Click the Email tab.
 
-Configuring email for a realm
-Keycloak sends emails to users to verify their email addresses, when they forget their passwords, or when an administrator needs to receive notifications about a server event. To enable Keycloak to send emails, you provide Keycloak with your SMTP server settings.
-Procedure
+- clients
 
-    Click Realm settings in the menu.
+Clients are entities that can request Keycloak to authenticate a user. Most often, clients are applications and services that want to use Keycloak to secure themselves and provide a single sign-on solution. Clients can also be entities that just want to request identity information or an access token so that they can securely invoke other services on the network that are secured by Keycloak.
 
-    Click the Email tab.
+- client adapters
 
+Client adapters are plugins that you install into your application environment to be able to communicate and be secured by Keycloak. Keycloak has a number of adapters for different platforms that you can download. There are also third-party adapters you can get for environments that we don’t cover.
 
-clients
+- consent
 
-    Clients are entities that can request Keycloak to authenticate a user. Most often, clients are applications and services that want to use Keycloak to secure themselves and provide a single sign-on solution. Clients can also be entities that just want to request identity information or an access token so that they can securely invoke other services on the network that are secured by Keycloak.
+Consent is when you as an admin want a user to give permission to a client before that client can participate in the authentication process. After a user provides their credentials, Keycloak will pop up a screen identifying the client requesting a login and what identity information is requested of the user. User can decide whether or not to grant the request.
 
+- client scopes
 
-client adapters
+When a client is registered, you must define protocol mappers and role scope mappings for that client. It is often useful to store a client scope, to make creating new clients easier by sharing some common settings. This is also useful for requesting some claims or roles to be conditionally based on the value of scope parameter. Keycloak provides the concept of a client scope for this.
 
-    Client adapters are plugins that you install into your application environment to be able to communicate and be secured by Keycloak. Keycloak has a number of adapters for different platforms that you can download. There are also third-party adapters you can get for environments that we don’t cover.
+- client role
 
+Clients can define roles that are specific to them. This is basically a role namespace dedicated to the client.
 
-consent
+- identity token
 
-    Consent is when you as an admin want a user to give permission to a client before that client can participate in the authentication process. After a user provides their credentials, Keycloak will pop up a screen identifying the client requesting a login and what identity information is requested of the user. User can decide whether or not to grant the request.
+A token that provides identity information about the user. Part of the OpenID Connect specification.
 
+- access token
 
+A token that can be provided as part of an HTTP request that grants access to the service being invoked on. This is part of the OpenID Connect and OAuth 2.0 specification.
 
-client scopes
+- assertion
 
-    When a client is registered, you must define protocol mappers and role scope mappings for that client. It is often useful to store a client scope, to make creating new clients easier by sharing some common settings. This is also useful for requesting some claims or roles to be conditionally based on the value of scope parameter. Keycloak provides the concept of a client scope for this.
+Information about a user. This usually pertains to an XML blob that is included in a SAML authentication response that provided identity metadata about an authenticated user.
 
-client role
+- service account
 
-    Clients can define roles that are specific to them. This is basically a role namespace dedicated to the client.
+Each client has a built-in service account which allows it to obtain an access token.
 
+- direct grant
 
-identity token
+A way for a client to obtain an access token on behalf of a user via a REST invocation.
 
-    A token that provides identity information about the user. Part of the OpenID Connect specification.
+- protocol mappers
 
-access token
+For each client you can tailor what claims and assertions are stored in the OIDC token or SAML assertion. You do this per client by creating and configuring protocol mappers.
 
-    A token that can be provided as part of an HTTP request that grants access to the service being invoked on. This is part of the OpenID Connect and OAuth 2.0 specification.
+- session
 
-assertion
+When a user logs in, a session is created to manage the login session. A session contains information like when the user logged in and what applications have participated within single sign-on during that session. Both admins and users can view session information.
 
-    Information about a user. This usually pertains to an XML blob that is included in a SAML authentication response that provided identity metadata about an authenticated user.
+- user federation provider
 
+Keycloak can store and manage users. Often, companies already have LDAP or Active Directory services that store user and credential information. You can point Keycloak to validate credentials from those external stores and pull in identity information.
 
-service account
+- identity provider
 
-    Each client has a built-in service account which allows it to obtain an access token.
+An identity provider (IDP) is a service that can authenticate a user. Keycloak is an IDP.
 
+- identity provider federation
 
-direct grant
+Keycloak can be configured to delegate authentication to one or more IDPs. Social login via Facebook or Google is an example of identity provider federation. You can also hook Keycloak to delegate authentication to any other OpenID Connect or SAML 2.0 IDP.
 
-    A way for a client to obtain an access token on behalf of a user via a REST invocation.
+- identity provider mappers
 
-protocol mappers
+When doing IDP federation you can map incoming tokens and assertions to user and session attributes. This helps you propagate identity information from the external IDP to your client requesting authentication.
 
-    For each client you can tailor what claims and assertions are stored in the OIDC token or SAML assertion. You do this per client by creating and configuring protocol mappers.
+- required actions
 
+Required actions are actions a user must perform during the authentication process. A user will not be able to complete the authentication process until these actions are complete. For example, an admin may schedule users to reset their passwords every month. An update password required action would be set for all these users.
 
-session
+- authentication flows
 
-    When a user logs in, a session is created to manage the login session. A session contains information like when the user logged in and what applications have participated within single sign-on during that session. Both admins and users can view session information.
-
-
-user federation provider
-
-    Keycloak can store and manage users. Often, companies already have LDAP or Active Directory services that store user and credential information. You can point Keycloak to validate credentials from those external stores and pull in identity information.
-
-
-identity provider
-
-    An identity provider (IDP) is a service that can authenticate a user. Keycloak is an IDP.
-
-
-identity provider federation
-
-    Keycloak can be configured to delegate authentication to one or more IDPs. Social login via Facebook or Google is an example of identity provider federation. You can also hook Keycloak to delegate authentication to any other OpenID Connect or SAML 2.0 IDP.
-
-
-identity provider mappers
-
-    When doing IDP federation you can map incoming tokens and assertions to user and session attributes. This helps you propagate identity information from the external IDP to your client requesting authentication.
-
-
-
-required actions
-
-    Required actions are actions a user must perform during the authentication process. A user will not be able to complete the authentication process until these actions are complete. For example, an admin may schedule users to reset their passwords every month. An update password required action would be set for all these users.
-
-
-authentication flows
-
-    Authentication flows are work flows a user must perform when interacting with certain aspects of the system. A login flow can define what credential types are required. A registration flow defines what profile information a user must enter and whether something like reCAPTCHA must be used to filter out bots. Credential reset flow defines what actions a user must do before they can reset their password.
+Authentication flows are work flows a user must perform when interacting with certain aspects of the system. A login flow can define what credential types are required. A registration flow defines what profile information a user must enter and whether something like reCAPTCHA must be used to filter out bots. Credential reset flow defines what actions a user must do before they can reset their password.
 
 ---
 Set Up a Realm
