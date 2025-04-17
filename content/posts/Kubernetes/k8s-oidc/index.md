@@ -107,5 +107,176 @@ From the Kubernetes admin’s perspective, we will:
 }
 ```
 
+
+![](assets/index_2025-04-17_21-32-05.png)
+
 - I am allowing all redirects and all web origins, though this is less than desirable in production.
 - Please change this values to your redirect URLs to enhance the security.
+
+
+![](assets/index_2025-04-17_21-31-35.png)
+
+- I have let only the Standard Flow and the Direct access (for username and password sing-in).
+
+## Configuring the name and groups claims
+
+We want to make those two claims available in the ID token. For that we will:
+
+- Create new client scopes and
+- Specify how to map them to the token
+- Configure those new scopes in the Keycloak client that we created for Kubernetes authentication
+
+
+![](assets/index_2025-04-17_21-33-06.png)
+
+
+![](assets/index_2025-04-17_21-33-22.png)
+
+
+![](assets/index_2025-04-17_21-33-40.png)
+
+The group scope:
+
+
+![](assets/index_2025-04-17_21-34-05.png)
+
+
+![](assets/index_2025-04-17_21-34-31.png)
+
+
+![](assets/index_2025-04-17_21-34-43.png)
+
+Gotchas
+
+- Forgetting to strip the path from the groups’s name
+- Forgetting to add this to the ID Token!
+- Forgetting to add this to the user info (if you plan to validate the token before submitting it in each request)
+
+The “Kubernetes” Client, Client Scopes configuration:
+
+- Add the client scopes name and groups
+- Make them Default so that’s easier later on
+
+
+![](assets/index_2025-04-17_21-35-40.png)
+
+## Common CLI environment variables
+
+To make it easier to go through the rest of the steps we will use some environment variables:
+
+```sh
+export REALM='the_realm_that_contains_the_k8s_client'
+export OIDC_SERVER='https://your.keycloak.server.local:8443'
+export OIDC_ISSUER_URL="${OIDC_SERVER}/realms/${REALM}"
+export OIDC_CLIENT_ID=k8s
+export OIDC_TOKEN_ENDPOINT=$(curl "${OIDC_ISSUER_URL}/.well-known/openid-configuration" | jq -r '.token_endpoint')
+export OIDC_USERINFO_ENDPOINT=$(curl "${OIDC_ISSUER_URL}/.well-known/openid-configuration" | jq -r '.userinfo_endpoint')
+```
+
+## K8S: Configure Kubernetes API Server
+
+We will setup minikube passing the configuration flags for the API Server directly from the command line.
+
+```sh
+# minikube setup
+minikube start --driver docker --cpus 8 --memory max --profile minikube \
+--embed-certs \
+--extra-config=apiserver.authorization-mode=Node,RBAC \
+--extra-config=apiserver.oidc-issuer-url=${OIDC_ISSUER_URL} \
+--extra-config=apiserver.oidc-client-id=${OIDC_CLIENT_ID} \
+--extra-config=apiserver.oidc-username-claim=name \
+--extra-config=apiserver.oidc-username-prefix=- \
+--extra-config=apiserver.oidc-groups-claim=groups \
+--extra-config=apiserver.oidc-groups-prefix=
+```
+
+Command Line breakdown
+
+— embed-certs : adds the certificates placed under $HOME/.minikube/certs/
+— extra-config=apiserver.authorization-mode=Node,RBAC : this adds RBAC to the cluster while maintaining the local node access (to prevent lockout).
+— extra-config=apiserver.oidc-issuer-url=${OIDC_ISSUER_URL} : the issuer URL (which is the URL with the realm, or in case of another OpenID provider, the URL where you can then find the .well-known/openid-configuration
+— extra-config=apiserver.oidc-client-id=${OIDC_CLIENT_ID} : the client ID (in our case, the name of the client in the real)
+— extra-config=apiserver.oidc-username-claim=name : the username claim from the token.
+— extra-config=apiserver.oidc-username-prefix=- : intentionally configured with a single dash, which prevents any prefix to be appended to the name-
+— extra-config=apiserver.oidc-groups-claim=groups : the configuration for the group name.
+— extra-config=apiserver.oidc-groups-prefix= : this one is intentionally left blank to prevent the API Server to add any prefix (like - to the groups’ names)
+
+Gotchas
+
+    The config is not yet ready or you have not configured an alternative to RBAC
+    The certificate is not trusted (because it is self-signed or it is not available in the trust store)
+
+## K8S: Configure RBAC
+
+For now, we will create a ClusterRole and a ClusterRoleBinding to demonstrate how to create how to grant “ReadOnly” rights to Namespaces and Pods within the cluster:
+
+```yaml
+# rbac.yaml
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-ro
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces","pods"]
+    verbs: ["get", "watch", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: k8s-ro
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k8s-ro
+subjects:
+- kind: Group
+  name: "k8s"
+  apiGroup: rbac.authorization.k8s.io
+```
+
+How does this work?
+
+The ClusterRole defines which operations can be performed on the API Server and the ClusterRoleBinding matches the role with a specific subject: notice the subjects code block:
+
+It references the name k8s of kind Group
+
+By assigning this group (“k8s”) to our users they will get RO access to the clusters’ namespaces and pods.
+
+Apply the config using the current local node credentials:
+
+kubectl apply -f rbac.yaml
+Configure the Client (kubectl)
+
+As explained in the introductory section, we will first obtain an ID token and then configure kubectl with it.
+
+For this purpose, I will create a user called k8suser in Keycloak and assign it the group k8s . You can skip this part if you have other users and or groups, just adjust to your needs:
+
+
+![](assets/index_2025-04-17_21-38-08.png)
+
+Preparing the command line to request the ID Token
+
+For this purpuse I will use curl and jq to get a response from Keycloak.
+
+I will then extract the tokens and use them to configure kubectl .
+
+```sh
+# Prepare some credentials
+export K8S_USER='k8suser'
+export K8S_USER_PASS='THE_USER_PASS'
+```
+
+```sh
+export RESPONSE=$(curl -v -k -X POST \
+-H "Content-Type: application/x-www-form-urlencoded" \
+"${OIDC_TOKEN_ENDPOINT}" \
+-d grant_type=password \
+-d client_id=${OIDC_CLIENT_ID} \
+-d username=${K8S_USER} \
+-d password=${K8S_USER_PASS} \
+-d scope="openid profile email name groups" | jq '.')
+```
+
+
