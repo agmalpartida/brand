@@ -42,6 +42,10 @@ Your app reads the token and knows who the user is and what they’re allowed to
 
 ## OAuth
 
+[OAuth 2.0](https://datatracker.ietf.org/doc/html/rfc6749) 
+
+The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service
+
 OAuth is a protocol that lets users give one app access to their data in another app, without sharing their passwords.
 
 Example: When you log in to a service using “Sign in with Google,” you’re using OAuth.
@@ -136,6 +140,14 @@ The second use case is a client accessing remote services.
     The remote REST service verifies the tokens signature.
 
     The remote REST service decides, based on access information within the token, to process or reject the request.
+
+
+    Your apps are integrated with OIDC with Keycloak (No ROPC grant)
+    SSO means having an active IdP session cookie
+
+    The system 1 (client 1) performs a standard OIDC federation, the user completes the authn mechanism and then, the system 1 gets the tokens, and you have an IdP session :cookie:
+    The system 2 (client 2) performs a standard OIDC federation but you achieve SSO because you have an active IdP session :cookie:, and the system 2 obtains NEW tokens
+
 
 
 ## Core concepts and terms
@@ -252,5 +264,114 @@ required actions
 authentication flows
 
     Authentication flows are work flows a user must perform when interacting with certain aspects of the system. A login flow can define what credential types are required. A registration flow defines what profile information a user must enter and whether something like reCAPTCHA must be used to filter out bots. Credential reset flow defines what actions a user must do before they can reset their password.
+
+---
+Set Up a Realm
+
+    In the Keycloak admin console, log in with the default administrator credentials (admin/admin).
+    Create a new realm for your application by clicking on “Add Realm” and provide a unique name for your realm.
+    Configure the realm settings, such as token lifespan, SSO settings, etc., according to your application’s requirements.
+
+Create a Client for Your Application
+
+    Inside your realm, navigate to the “Clients” section and click on “Create” to add a new client.
+    Provide a unique client ID and choose “confidential” as the client’s access type.
+    Configure the allowed redirect URLs, web origins, and base URL for your application.
+
+Define User Roles
+
+    In the Keycloak admin console, go to the “Roles” section and create roles that correspond to different levels of access within your application.
+    For each role, specify the permissions it grants to users.
+
+Integrate Keycloak with Your Application
+
+    Add the Keycloak JavaScript adapter to your frontend application by including the Keycloak JavaScript library in your HTML files.
+    Configure the adapter with your client ID and Keycloak server URL.
+    Initialize the Keycloak adapter in your application to handle authentication and session management.
+
+Implement Login and Logout Functionality
+
+    Create a login button in your application that redirects users to the Keycloak login page.
+    Handle the authentication callback from Keycloak and set up the user session in your application after successful login.
+    Implement a logout mechanism that redirects users to the Keycloak logout page to terminate their session.
+
+Secure Resources Based on User Roles
+
+    Use the Keycloak adapter to enforce role-based access control for your application’s resources.
+    Protect specific endpoints or components by checking the user’s assigned roles before granting access.
+
+Enable Single Sign-On (SSO)
+
+    In the Keycloak admin console, go to the “Realm Settings” and enable Single Sign-On (SSO) for your realm.
+    Configure your applications to participate in the SSO realm to enable users to log in once and access multiple applications seamlessly.
+
+Customize the Login and Registration Flow (Optional)
+
+    Customize the Keycloak login and registration themes to match your application’s branding and user experience.
+    Add your own logo, colors, and styles to create a cohesive user interface.
+
+
+Connect 3rd party with Keycloak
+
+we’ll see how we use Keycloak for Authentication and Authorization. Below are the steps we keep in mind when we deal with keycloak.
+
+Flow Diagram Steps:
+
+    User Request: A user initiates a request to access data or perform an action in the frontend application, which sends a request to the Hasura GraphQL API.
+    Hasura GraphQL API: Hasura receives the GraphQL request from the frontend and processes it.
+    Auth Webhook Check:
+
+Before processing the request, Hasura checks for the presence of an Authorization header containing a valid JWT token. If the token is not present or invalid, Hasura redirects the user to Keycloak for authentication.
+
+    Keycloak Authentication:
+
+The user is redirected to the Keycloak login page to enter their credentials. After successful authentication, Keycloak generates a JWT access token.
+
+    JWT Token Exchange:
+
+Keycloak sends the JWT access token back to the frontend application.
+
+    Frontend Request with JWT:
+
+The frontend includes the JWT access token in the Authorization header and re-sends the original request to the Hasura GraphQL API.
+
+    Hasura Auth Webhook:
+
+Hasura forwards the request to the Auth Webhook, passing the JWT token in the request header.
+
+    Auth Webhook Validation:
+
+The Auth Webhook receives the request and validates the JWT token by sending it to Keycloak’s token validation endpoint.
+
+    Token Validation with Keycloak:
+
+The Auth Webhook sends the JWT token to Keycloak for validation. Keycloak responds with the token status (active or inactive).
+
+    Extract Roles:
+
+If the token is active, the Auth Webhook extracts the user’s roles from the JWT token.
+
+    Authorize Request:
+
+The Auth Webhook responds to Hasura with the user’s roles, which include the necessary permissions for the requested action.
+
+    Hasura Authorization:
+
+Hasura receives the roles from the Auth Webhook and validates the user’s permissions against the requested action.
+
+    Request Fulfillment:
+
+If the user is authorized, Hasura processes the original request and retrieves data or performs the action requested.
+
+    Response to Frontend:
+
+Hasura sends the response back to the frontend application with the requested data or action result.
+
+    User Interaction:
+
+The frontend application displays the data or action result to the user.
+
+This flow diagram outlines the process of how user requests are fulfilled with an authorization layer connecting Hasura and Keycloak.
+
 
 
