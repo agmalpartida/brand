@@ -16,6 +16,10 @@ showActions: false
 
 # [Upgrade](https://www.talos.dev/v1.9/kubernetes-guides/upgrading-kubernetes/) Kubernetes Version
 
+```sh
+$ talosctl --nodes 192.168.1.71 etcd snapshot etcd.backup
+```
+
 > Upgrading Kubernetes is non-disruptive to the cluster workloads.
 
 You can do this live, assuming you don't have single-replica workloads that are node-specific.
@@ -51,6 +55,10 @@ Be sure to upgrade one node at a time and check that it's healthy before moving 
   - `--image`: Specify the factory image to use
   - `--preserve`: Don't wipe extraMounts if applicable. I default to using this unless I have a specific reason to wipe additional mounts.
 - Repeat the upgrade command for each node, one at a time, until all nodes have been upgraded.
+
+```sh
+$ talosctl --talosconfig ~/.talos/talosconfig upgrade -n node3 --image factory.talos.dev/installer/88d1f7a5c4f1d3aba7df787c448c1d3d008ed29cfb34af53fa0df4336a56040b:v1.9.2 --preserve
+```
 
 ```sh
 ➜  talosctl -n 192.168.1.71 version
@@ -89,4 +97,16 @@ Once Nodes have been upgraded, upgrade the `talosctl` client so the version matc
 
 I like to update my local talosconfig repo which was used to deploy the original Talos cluster and also includes secrets used to recover in case of any problems. This is a good time to update the factory image in controlplane.yaml and worker.yaml for any new nodes you deploy.
 
-That's it!
+```sh
+$ talosctl -n node1 health
+discovered nodes: ["192.168.1.71" "192.168.1.59" "192.168.1.73"]
+waiting for etcd to be healthy: ...
+waiting for etcd to be healthy: OK
+waiting for etcd members to be consistent across nodes: ...
+waiting for etcd members to be consistent across nodes: OK
+...
+```
+
+```sh
+➜  talosctl --nodes 192.168.1.71 dmesg -f
+```

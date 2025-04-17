@@ -80,8 +80,6 @@ Namespace Like Your Life Depends on It
 
 Take a step back and design your namespace strategy; future you will say thanks.
 
-
-
 ## CRI
 
 With version 1.24, Kubernetes has overcome its dependence on Docker and now only relies on any CRI compliant runtime to start containers.
@@ -301,6 +299,15 @@ Best Practices
 
 ![](assets/index_2025-04-13_20-32-35.png)
 
+## Taints
+
+```sh
+➜  kubectl describe node node1 | grep Taints
+Taints:             node-role.kubernetes.io/control-plane:NoSchedule
+
+➜  kubectl taint nodes node1 node-role.kubernetes.io/control-plane:NoSchedule-
+node/node1 untainted
+```
 
 ## Security
 
