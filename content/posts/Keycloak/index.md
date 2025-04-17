@@ -29,14 +29,19 @@ How Keycloak Works (In Simple Steps):
 
 - User Opens Your App:
 A user visits your app and clicks “Log in.”
+
 - Redirect to Keycloak:
 Instead of asking for their username and password, your app sends them to Keycloak.
+
 - User Logs in with Keycloak:
 Keycloak shows a login form. The user enters their credentials or chooses to log in with Google or another provider.
+
 - Keycloak Verifies the User:
 Keycloak checks if the username and password are correct or asks the chosen provider (e.g., Google) to confirm the user’s identity.
+
 - Keycloak Sends a Token:
 Once verified, Keycloak sends your app a token, which is proof that the user is authenticated.
+
 - Your App Lets the User In:
 Your app reads the token and knows who the user is and what they’re allowed to do.
 
@@ -44,62 +49,42 @@ Your app reads the token and knows who the user is and what they’re allowed to
 
 Keycloak users can manage their accounts through the Account Console. They can configure their profiles, add two-factor authentication, include identity provider accounts, and oversee device activity.
 
-Accessing the Account Console
-Procedure
+- Accessing the Account Console
+1. Make note of the realm name and IP address for the Keycloak server where your account exists.
+2. In a web browser, enter a URL in this format: `server-root/realms/{realm-name}/account`.
+3. Enter your login name and password.
 
-    Make note of the realm name and IP address for the Keycloak server where your account exists.
+You can also ask for additional scopes when calling the account console URL by setting the scope parameter in this format: `server-root/realms/{realm-name}/account?scope=phone`.
 
-    In a web browser, enter a URL in this format: server-root/realms/{realm-name}/account.
-
-    Enter your login name and password.
-
-You can also ask for additional scopes when calling the account console URL by setting the scope parameter in this format: server-root/realms/{realm-name}/account?scope=phone.
-
-
+---
 ## Features
 
-Single-Sign On
+- Single-Sign On
 
 Users authenticate with Keycloak rather than individual applications. This means that your applications don't have to deal with login forms, authenticating users, and storing users. Once logged-in to Keycloak, users don't have to login again to access a different application.
 
 This also applies to logout. Keycloak provides single-sign out, which means users only have to logout once to be logged-out of all applications that use Keycloak.
 
-
-
-Identity Brokering and Social Login
+- Identity Brokering and Social Login
 
 Enabling login with social networks is easy to add through the admin console. It's just a matter of selecting the social network you want to add. No code or changes to your application is required. 
 Keycloak can also authenticate users with existing OpenID Connect or SAML 2.0 Identity Providers. Again, this is just a matter of configuring the Identity Provider through the admin console. 
 Identity Brokering OpenID Connect or SAML 2.0 IdPs
 
-
-User Federation
+- User Federation
 
 Keycloak has built-in support to connect to existing LDAP or Active Directory servers. You can also implement your own provider if you have users in other stores, such as a relational database.
 
-
-Admin Console
+- Admin Console
 
 Through the admin console administrators can centrally manage all aspects of the Keycloak server. 
 
 
-Account Management Console
-https://keycloak.albertogalvez.com/auth/realms/sso/account/
-
-Through the account management console users can manage their own accounts. They can update the profile, change passwords, and setup two-factor authentication.
-
-Users can also manage sessions as well as view history for the account.
-
-If you've enabled social login or identity brokering users can also link their accounts with additional providers to allow them to authenticate to the same account with different identity providers.
-
-
-
-Standard Protocols
+- Standard Protocols
 
 Keycloak is based on standard protocols and provides support for OpenID Connect, OAuth 2.0, and SAML.
 
-
-Authorization Services
+- Authorization Services
 
 If role based authorization doesn't cover your needs, Keycloak provides fine-grained authorization services as well. This allows you to manage permissions for all your services from the Keycloak admin console and gives you the power to define exactly the policies you need.
 
