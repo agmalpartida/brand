@@ -110,6 +110,34 @@ Here’s how all these pieces fit together in a practical scenario:
     The user navigates to another app. This app redirects to Keycloak.
     Keycloak recognizes the user’s session and grants access without requiring a new login.
 
+## OpenID Connect
+
+OpenID Connect (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers
+OpenID Connect (OIDC) is an authentication protocol that is an extension of OAuth 2.0.
+
+OAuth 2.0 is a framework for building authorization protocols and is incomplete. OIDC, however, is a full authentication and authorization protocol that uses the Json Web Token (JWT) standards. The JWT standards define an identity token JSON format and methods to digitally sign and encrypt data in a compact and web-friendly way.
+
+In general, OIDC implements two use cases. The first case is an application requesting that a Keycloak server authenticates a user. Upon successful login, the application receives an identity token and an access token. The identity token contains user information including user name, email, and profile information. The realm digitally signs the access token which contains access information (such as user role mappings) that applications use to determine the resources users can access in the application.
+
+
+
+The second use case is a client accessing remote services.
+
+    The client requests an access token from Keycloak to invoke on remote services on behalf of the user.
+
+    Keycloak authenticates the user and asks the user for consent to grant access to the requesting client.
+
+    The client receives the access token which is digitally signed by the realm.
+
+    The client makes REST requests on remote services using the access token.
+
+    The remote REST service extracts the access token.
+
+    The remote REST service verifies the tokens signature.
+
+    The remote REST service decides, based on access information within the token, to process or reject the request.
+
+
 ## Core concepts and terms
 
 Consider these core concepts and terms before attempting to use Keycloak to secure your web applications and REST services.
