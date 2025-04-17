@@ -170,3 +170,29 @@ What about CPU/A and MEM/A when you see the nodes?
 if you're asking yourself like me, what a milli-vCPU is 1/1000 of
 (Threads x Cores) x Physical CPU = Number vCPU
 
+## Views
+
+- Example:
+
+```yaml
+views:
+  v1/endpoints:
+    columns:
+      - AGE|RW
+      - NAME
+      - ENPOINTS|H
+      - BLA:.subsets[*].ports[*].port
+      - BOZO:.metadata.labels.app|W
+      - BLEE:.metadata.creationTimestamp|T
+      - ZORG:.status.containersStatuses[*].restart
+```
+
+- keywords:
+
+  - W -> show only in wide mode.
+  - H -> hide.
+
+
+
+
+
