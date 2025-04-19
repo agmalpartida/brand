@@ -22,6 +22,19 @@ CPU Throttled
 ![throttled](assets/index_2025-04-19_11-09-36.png)
 
 
+CPU Throttling (Kubernetes Workloads):A process where Kubernetes and Container Runtimes restricts a container's CPU usage to stay within its assigned limits, often causing tasks to wait for the next scheduler quota period when they exceed their allowed CPU time.
+
+CPU Throttling (Linux Kernel):A mechanism in the CFS Bandwidth Control where the kernel prevents a cgroup from exceeding its allocated CPU quota, forcing tasks to stop running until the next quota period.
+
+
+CPU Requests are implemented via assigning priorities to containers’ processes, i.e., assigning CPU weight and/or “nice” value to cgroups (files “cpu.weight” or “cpu.weight.nice”)
+Doc: https://docs.kernel.org/admin-guide/cgroup-v2.html#cgroup-v2-cpu
+Known in community terms also as “Soft Limit”.
+
+CPU Limits are implemented via “CFS Bandwidth Control” (CFS BWC) and cgroups “cpu.max” interface file.
+CFS BWC Doc: https://docs.kernel.org/scheduler/sched-bwc.html
+Known in community terms also as “Hard Limit”.
+
 ## CPU Usage vs CPU Throttling
 
 A random but real example: Grafana CPU Usage vs Throttling reports for a K8s container.
@@ -141,5 +154,78 @@ It uses 10% of it’s request + 70% of unused and unreserved + 15% borrowed from
 
 
 ![](assets/index_2025-04-19_11-20-03.png)
+
+
+## CPU Requests vs Limits
+
+
+Let introduce limits for A and B:
+A CPU: Requests = 200m, Limits = 260m
+B CPU: Requests = 100m, Limits = 150m
+Containers may burst above their requests, but no more then defined limits, beyond which they will be CPU throttled, even if there is a plenty of idle CPU available.
+Usage slices above requests up to limits are possible only if there are available unused CPU resources on the node.
+
+
+![](assets/index_2025-04-19_11-21-06.png)
+
+### CPU Limits
+
+
+CPU limits translate into a time quota for CPU usage within a defined accounting period.
+CPU Limits = 100m = 0.1 CPU may be translated as: 
+Use 10% of a single CPU capacity/time during a period, or
+Use as much CPU as needed, but only for 10% of the time within a period.
+Example: 
+Use the CPU only for 1 second every 10s, or, closer to reality: 
+Use the CPU for 10ms in every 100ms period
+
+
+![](assets/index_2025-04-19_11-21-42.png)
+
+### CPU Limits vs Throttling
+
+
+1) Application has only small (below quota) CPU bursts each period:
+
+
+![](assets/index_2025-04-19_11-22-16.png)
+
+
+2) Application has bigger CPU bursts each period, and CPU demand exceeds defined quota, so: 
+
+CPU Time will be limited to quota
+Remained time to execute is transferred to next period.
+
+![](assets/index_2025-04-19_11-22-52.png)
+
+
+CPU Requests!
+Always set CPU Requests to realistic and production-like performance testing proven values.
+They should reflect normal (not minimal) CPU Usage of application, or even p99 of observed maximum, depending by case.
+
+They guarantee requested resources.
+They allow spare and proportional to requests resources usage when: 
+Is needed higher amount of resources then requested, 
+Resources contention on node, 
+Others…
+
+
+CPU Limits?
+This is tricky, controversial subject in community.
+They may cause application’s big, unexpected and unjustified delays, but they also may …
+Cap greedy CPU Usage of some buggy crazy noisy neighbor.
+So…?
+Set them in function of use case. 
+Setting them requires lots of careful, iterative performance tests!
+In production set them very high or remove at all for response time critical workloads, especially when there are lots of available CPUs.
+Set them higher (30-50% to 200-300%) then CPU Request for other cases or when you are enforced to set them.
+Set Requests = Limits for narrow use cases, like: 
+Performance Tests to determine workloads sizing and demands
+When need “Guaranteed QoS” Pod classes
+Especially Static CPU Binding use cases (narrow usage)
+Others…
+
+
+![](assets/index_2025-04-19_11-23-54.png)
 
 
