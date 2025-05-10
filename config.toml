@@ -1,0 +1,123 @@
+baseURL = "https://albertogalvez.com/"
+title = ""
+#theme = "PaperMod"
+theme = "PaperModX"
+enableInlineShortcodes = true
+enableRobotsTXT = true
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+enableEmoji = true
+pygmentsUseClasses = true
+mainsections = ["posts", "papermod"]
+# googleAnalytics = ""
+
+# Se reemplaza paginate por pagerSize, según la advertencia
+[pagination]
+pagerSize = 10
+
+[minify]
+disableXML = true
+minifyOutput = true
+paginate = 3
+languageCode = "en-us"
+DefaultContentLanguage = "en-us"
+enableInlineShortcodes = true
+footnoteReturnLinkContents = "^"
+
+[languages]
+  [languages.en]
+  languageName = "English"
+  weight = 1
+  
+  [languages.en.taxonomies]
+    category = "categories"
+    tag = "tags"
+    series = "series"
+
+  [languages.en.menu]
+
+    [[languages.en.menu.main]]
+    name = "Search"
+    url = "search/"
+    weight = 10
+
+    [[languages.en.menu.main]]
+    name = "Tags"
+    url = "tags/"
+    weight = 10
+
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+[params]
+socialIcons = [
+  { name = "github", url = "https://github.com/agmalpartida", title = "(〃'▽'〃)" },
+  { name = "linkedin", url = "https://www.linkedin.com/in/agmalpartida/", title = "" }
+]
+env = "production"
+description = ""
+author = "Alberto"
+defaultTheme = "auto"
+# DateFormat = "2024-12-31"
+ShowShareButtons = true
+ShowReadingTime = false
+displayFullLangName = true
+ShowPostNavLinks = true
+ShowBreadCrumbs = true
+ShowCodeCopyButtons = true
+ShowRssButtonInSectionTermList = true
+ShowAllPagesInArchive = false
+ShowPageNums = true
+ShowToc = true
+TocOpen = true
+images = ["images/logo.png"]
+extendCodeBackground = true
+hideFooter = true
+VisitCount = true
+
+[params.profileMode]
+enabled = true
+title = "Alberto Galvez"
+
+[params.editPost]
+URL = "https://github.com/agmalpartida/brand/tree/main/content"
+Text = "Suggest Changes"
+appendFilePath = true
+
+[params.assets]
+disableHLJS = true
+favicon = "img/favicon.png"
+favicon16x16 = "img/favicon.png"
+favicon32x32 = "img/favicon.png"
+apple_touch_icon = "img/favicon.png"
+safari_pinned_tab = "img/favicon.png"
+# disableFingerprinting = true
+
+[params.fuseOpts]
+isCaseSensitive = false
+shouldSort = true
+location = 0
+distance = 1000
+threshold = 0.4
+minMatchCharLength = 0
+keys = ["title"]
+
+[markup]
+  [markup.highlight]
+  anchorLineNos = false
+  codeFences = true
+  guessSyntax = false
+  lineNos = true
+  noClasses = true
+  style = "github"
+  tabWidth = 4
+  hl_Lines = ""
+  hl_inline = false
+  lineAnchors = ""
+  lineNoStart = 1
+  lineNumbersInTable = true
+
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+    unsafe = true
